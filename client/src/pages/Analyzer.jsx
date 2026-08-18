@@ -26,6 +26,21 @@ function buildPlies(pgn) {
   return plies;
 }
 
+function uciToSan(fen, uciMove) {
+  if (!uciMove || uciMove.length < 4) return null;
+  try {
+    const chess = new Chess(fen);
+    const move = chess.move({
+      from: uciMove.slice(0, 2),
+      to: uciMove.slice(2, 4),
+      promotion: uciMove.length > 4 ? uciMove[4] : undefined,
+    });
+    return move?.san || null;
+  } catch {
+    return null;
+  }
+}
+
 function evalLabel(evaluation) {
   if (!evaluation) return '…';
   if (evaluation.mate !== undefined) return `#${evaluation.mate}`;
@@ -106,7 +121,7 @@ export default function Analyzer() {
         evalAfter: evalAfterCp,
         evalLoss: loss,
         classification,
-        bestMoveSan: before.pv?.[0] || null,
+        bestMoveSan: uciToSan(p.fenBefore, before.pv?.[0]),
       };
       results.push(enriched);
       setProgress(Math.round(((i + 1) / plies.length) * 100));

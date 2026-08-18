@@ -26,6 +26,14 @@ npm run dev            # runs the API (port 4000) and the Vite dev server (port 
 Then open http://localhost:5173, enter a chess.com username, and click **Connect** →
 **Sync recent games**.
 
+If you're testing without outbound access to chess.com, seed a sample game instead:
+
+```bash
+node server/scripts/seed-test-game.js   # inserts one game for user "testuser"
+```
+
+Then open the app and connect as `testuser` to try the Analyzer/Puzzles/Lessons flow.
+
 ### Run separately
 
 ```bash
