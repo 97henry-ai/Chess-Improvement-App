@@ -24,7 +24,16 @@ function buildPlies(pgn) {
     const fenBefore = replay.fen();
     replay.move(move.san);
     const fenAfter = replay.fen();
-    plies.push({ ply: i + 1, san: move.san, from: move.from, to: move.to, color: move.color, fenBefore, fenAfter });
+    plies.push({
+      ply: i + 1,
+      san: move.san,
+      from: move.from,
+      to: move.to,
+      color: move.color,
+      fenBefore,
+      fenAfter,
+      isCheckmateAfter: replay.isCheckmate(),
+    });
   });
   return plies;
 }
@@ -42,6 +51,56 @@ function uciToSan(fen, uciMove) {
   } catch {
     return null;
   }
+}
+
+/** Replay a sequence of UCI moves from a FEN, converting each to SAN, stopping at the first illegal move. */
+function pvToSanLine(fen, uciMoves = [], maxPlies = 4) {
+  const chess = new Chess(fen);
+  const sans = [];
+  for (const uci of uciMoves.slice(0, maxPlies)) {
+    if (!uci || uci.length < 4) break;
+    let move;
+    try {
+      move = chess.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci.length > 4 ? uci[4] : undefined });
+    } catch {
+      move = null;
+    }
+    if (!move) break;
+    sans.push(move.san);
+  }
+  return sans;
+}
+
+/** Build a human-readable explanation of why a move fell short, and what was better. */
+function explainMove(ply) {
+  if (!ply.classification || ply.classification === 'best' || ply.classification === 'good') return null;
+
+  const label = ply.classification === 'blunder' ? 'a blunder' : ply.classification === 'mistake' ? 'a mistake' : 'inaccurate';
+  const alternatives = (ply.alternatives || []).filter((a) => a.san && a.san !== ply.san);
+  const opponentColor = ply.color === 'w' ? 'Black' : 'White';
+
+  let text;
+  if (ply.evalLoss >= 600) {
+    text = `${ply.san} is ${label} — it walks into a decisive, likely game-losing sequence.`;
+  } else {
+    const lossPawns = (ply.evalLoss / 100).toFixed(1);
+    text = `${ply.san} is ${label} — it gives up about ${lossPawns} pawn${lossPawns === '1.0' ? '' : 's'} of evaluation.`;
+  }
+
+  if (alternatives.length) {
+    const [first, ...rest] = alternatives;
+    text += ` The engine preferred ${first.san}`;
+    const others = rest.slice(0, 2).map((a) => a.san);
+    if (others.length) text += ` (or ${others.join(' / ')})`;
+    text += ' instead.';
+  }
+
+  if (ply.refutationSan?.length) {
+    const mateNote = ply.refutationIsMate ? ', leading to forced checkmate' : '';
+    text += ` This lets ${opponentColor} continue with ${ply.refutationSan.join(' ')}${mateNote}.`;
+  }
+
+  return text;
 }
 
 function evalLabel(evaluation) {
@@ -145,19 +204,44 @@ export default function Analyzer() {
     const results = [];
     for (let i = 0; i < plies.length; i++) {
       const p = plies[i];
-      const before = await analyzeFen(p.fenBefore, { depth: 12 });
-      const after = await analyzeFen(p.fenAfter, { depth: 12 });
+      const before = await analyzeFen(p.fenBefore, { depth: 12, multipv: 3 });
+      const alternatives = (before.lines || []).map((line) => ({
+        san: uciToSan(p.fenBefore, line.pv?.[0]),
+        evalCp: evalToCp(line.evaluation),
+      }));
       const evalBeforeCp = evalToCp(before.evaluation);
-      const evalAfterCp = evalToCp(after.evaluation);
-      const { loss, classification } = classifyMove(evalBeforeCp, evalAfterCp, p.color);
-      const enriched = {
-        ...p,
-        evalBefore: evalBeforeCp,
-        evalAfter: evalAfterCp,
-        evalLoss: loss,
-        classification,
-        bestMoveSan: uciToSan(p.fenBefore, before.pv?.[0]),
-      };
+
+      let enriched;
+      if (p.isCheckmateAfter) {
+        // A position with no legal replies has no engine score to compare against —
+        // delivering checkmate is always the best possible outcome, full stop.
+        enriched = {
+          ...p,
+          evalBefore: evalBeforeCp,
+          evalAfter: evalBeforeCp,
+          evalLoss: 0,
+          classification: 'best',
+          bestMoveSan: p.san,
+          alternatives,
+          refutationSan: [],
+          refutationIsMate: false,
+        };
+      } else {
+        const after = await analyzeFen(p.fenAfter, { depth: 12 });
+        const evalAfterCp = evalToCp(after.evaluation);
+        const { loss, classification } = classifyMove(evalBeforeCp, evalAfterCp, p.color);
+        enriched = {
+          ...p,
+          evalBefore: evalBeforeCp,
+          evalAfter: evalAfterCp,
+          evalLoss: loss,
+          classification,
+          bestMoveSan: alternatives[0]?.san ?? uciToSan(p.fenBefore, before.pv?.[0]),
+          alternatives,
+          refutationSan: loss >= 50 ? pvToSanLine(p.fenAfter, after.pv, 4) : [],
+          refutationIsMate: loss >= 50 && after.evaluation?.mate !== undefined,
+        };
+      }
       results.push(enriched);
       setProgress(Math.round(((i + 1) / plies.length) * 100));
     }
@@ -282,16 +366,25 @@ export default function Analyzer() {
             </div>
 
             {currentPly && (
-              <p>
-                Move {Math.ceil(currentPly.ply / 2)}
-                {currentPly.color === 'w' ? '.' : '...'} <strong>{currentPly.san}</strong>
-                {currentPly.classification && (
-                  <> — <span className={`classification-${currentPly.classification}`}>{currentPly.classification}</span></>
-                )}
-                {currentPly.evalLoss > 20 && currentPly.bestMoveSan && (
-                  <> (best was <strong>{currentPly.bestMoveSan}</strong>)</>
-                )}
-              </p>
+              <div style={{ marginBottom: 14 }}>
+                <p style={{ marginBottom: currentPly.classification ? 6 : 0 }}>
+                  Move {Math.ceil(currentPly.ply / 2)}
+                  {currentPly.color === 'w' ? '.' : '...'} <strong>{currentPly.san}</strong>
+                  {currentPly.classification && (
+                    <> — <span className={`classification-${currentPly.classification}`}>{currentPly.classification}</span></>
+                  )}
+                </p>
+                {(() => {
+                  const explanation = explainMove(currentPly);
+                  return explanation ? (
+                    <p style={{ fontSize: '0.85rem', lineHeight: 1.55 }}>{explanation}</p>
+                  ) : currentPly.classification === 'best' || currentPly.classification === 'good' ? (
+                    <p style={{ fontSize: '0.85rem' }} className="classification-best">
+                      {currentPly.classification === 'best' ? 'This was the engine\'s top choice.' : 'A strong move — close to the engine\'s top choice.'}
+                    </p>
+                  ) : null;
+                })()}
+              </div>
             )}
 
             <h3 style={{ marginTop: 18 }}>Move list</h3>
@@ -314,19 +407,27 @@ export default function Analyzer() {
             {blunders.length === 0 && <p>Run analysis to detect blunders and mistakes.</p>}
             <ul className="list-plain">
               {blunders.map((p) => (
-                <li key={p.ply} className="move-row">
-                  <span>
-                    Move {Math.ceil(p.ply / 2)} <strong>{p.san}</strong>{' '}
-                    <span className={`classification-${p.classification}`}>({p.classification})</span>
-                  </span>
-                  <button
-                    className="btn secondary"
-                    style={{ padding: '4px 10px', fontSize: '0.8rem' }}
-                    disabled={!!savedPuzzleIds[p.ply]}
-                    onClick={() => saveAsPuzzle(p)}
-                  >
-                    {savedPuzzleIds[p.ply] ? 'Saved ✓' : 'Save as puzzle'}
-                  </button>
+                <li
+                  key={p.ply}
+                  className={`move-row ${cursor === p.ply ? 'active' : ''}`}
+                  style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6, cursor: 'pointer' }}
+                  onClick={() => setCursor(p.ply)}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>
+                      Move {Math.ceil(p.ply / 2)} <strong>{p.san}</strong>{' '}
+                      <span className={`classification-${p.classification}`}>({p.classification})</span>
+                    </span>
+                    <button
+                      className="btn secondary"
+                      style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                      disabled={!!savedPuzzleIds[p.ply]}
+                      onClick={(e) => { e.stopPropagation(); saveAsPuzzle(p); }}
+                    >
+                      {savedPuzzleIds[p.ply] ? 'Saved ✓' : 'Save as puzzle'}
+                    </button>
+                  </div>
+                  <p style={{ fontSize: '0.8rem', lineHeight: 1.5, margin: 0 }}>{explainMove(p)}</p>
                 </li>
               ))}
             </ul>
