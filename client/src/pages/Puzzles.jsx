@@ -5,6 +5,7 @@ import { useUser } from '../UserContext.jsx';
 import { api } from '../api.js';
 import { useChessInteraction } from '../engine/useChessInteraction.js';
 import { playMoveSound } from '../engine/sound.js';
+import { highestRating } from '../ratingUtils.js';
 
 const EMPTY_CHESS = new Chess();
 
@@ -22,15 +23,28 @@ export default function Puzzles() {
   const [step, setStep] = useState(0);
   const [status, setStatus] = useState('playing'); // 'playing' | 'correct' | 'wrong'
   const [stats, setStats] = useState(null);
+  const [chessComRating, setChessComRating] = useState(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (username) {
       api.getCustomPuzzles(username).then(setCustomPuzzles).catch((e) => setError(e.message));
       api.getPuzzleStats(username).then(setStats).catch(() => {});
+      api
+        .getStats(username)
+        .then((s) => setChessComRating(highestRating(s)))
+        .catch(() => setChessComRating(null));
+    } else {
+      setChessComRating(null);
     }
-    api.getCuratedPuzzles().then(setCuratedPuzzles).catch((e) => setError(e.message));
   }, [username]);
+
+  useEffect(() => {
+    api
+      .getCuratedPuzzles(chessComRating ? { near: chessComRating } : {})
+      .then(setCuratedPuzzles)
+      .catch((e) => setError(e.message));
+  }, [chessComRating]);
 
   const queue = source === 'mine' ? customPuzzles : curatedPuzzles;
   const puzzle = queue[index];
@@ -124,6 +138,9 @@ export default function Puzzles() {
         <button className={`btn ${source === 'curated' ? '' : 'secondary'}`} onClick={() => { setSource('curated'); setIndex(0); }}>
           Curated tactics ({curatedPuzzles.length})
         </button>
+        {source === 'curated' && chessComRating && (
+          <span className="tag">Calibrated to your rating ({chessComRating})</span>
+        )}
         {stats && (
           <span className="tag" style={{ marginLeft: 'auto' }}>
             {stats.solved}/{stats.attempted} solved lifetime

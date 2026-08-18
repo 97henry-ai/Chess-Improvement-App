@@ -30,7 +30,13 @@ export const api = {
   getCustomPuzzles: (username) => request(`/puzzles/${encodeURIComponent(username)}/custom`),
   saveCustomPuzzle: (username, puzzle) =>
     request(`/puzzles/${encodeURIComponent(username)}/custom`, { method: 'POST', body: JSON.stringify(puzzle) }),
-  getCuratedPuzzles: (theme) => request(`/puzzles/curated${theme ? `?theme=${theme}` : ''}`),
+  getCuratedPuzzles: ({ theme, near } = {}) => {
+    const qs = new URLSearchParams();
+    if (theme) qs.set('theme', theme);
+    if (near !== undefined && near !== null) qs.set('near', near);
+    const s = qs.toString();
+    return request(`/puzzles/curated${s ? `?${s}` : ''}`);
+  },
   recordPuzzleAttempt: (puzzleId, username, correct) =>
     request(`/puzzles/${puzzleId}/attempt`, { method: 'POST', body: JSON.stringify({ username, correct }) }),
   getPuzzleStats: (username) => request(`/puzzles/${encodeURIComponent(username)}/stats`),

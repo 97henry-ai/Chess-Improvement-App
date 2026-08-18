@@ -271,13 +271,16 @@ export default function Analyzer() {
   async function saveAsPuzzle(ply) {
     if (!username) return;
     try {
+      // Use the rating the player actually held in this game, so the puzzle's
+      // difficulty label matches their real level rather than a guess.
+      const playerRating = game?.player_color === 'white' ? game?.white_rating : game?.black_rating;
       const saved = await api.saveCustomPuzzle(username, {
         fen: ply.fenBefore,
         solution_san: [ply.bestMoveSan || ply.san],
         theme: `blunder-${ply.color === 'w' ? 'white' : 'black'}`,
         eval_loss: ply.evalLoss,
         game_id: game?.id,
-        rating: 1200,
+        rating: playerRating || 1200,
       });
       setSavedPuzzleIds((prev) => ({ ...prev, [ply.ply]: saved.id }));
     } catch (e) {

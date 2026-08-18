@@ -32,9 +32,18 @@ router.get('/:username/custom', (req, res) => {
 });
 
 router.get('/curated', (req, res) => {
-  const { theme } = req.query;
+  const { theme, near } = req.query;
   const filtered = theme ? curated.filter((p) => p.theme === theme) : curated;
-  res.json(filtered.map((p, i) => ({ id: `curated-${i}`, source: 'curated', ...p })));
+  const withIds = filtered.map((p, i) => ({ id: `curated-${i}`, source: 'curated', ...p }));
+
+  // When a target rating is given, order puzzles closest-to-your-level first
+  // rather than by insertion order — this is what "calibrated to your rating" means in practice.
+  const target = Number(near);
+  if (near !== undefined && !Number.isNaN(target)) {
+    withIds.sort((a, b) => Math.abs((a.rating ?? target) - target) - Math.abs((b.rating ?? target) - target));
+  }
+
+  res.json(withIds);
 });
 
 router.post('/:puzzleId/attempt', (req, res) => {
