@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useUser } from '../UserContext.jsx';
 import { api } from '../api.js';
+import { BOOKS, SITES } from '../data/resources.js';
 
 const CATEGORIES = ['tactics', 'openings', 'endgames', 'strategy', 'mindset'];
 
@@ -11,6 +12,7 @@ export default function Lessons() {
   const [weakness, setWeakness] = useState(null);
   const [filter, setFilter] = useState('all');
   const [error, setError] = useState('');
+  const [showResources, setShowResources] = useState(false);
 
   useEffect(() => {
     api.getLessons().then(setLessons).catch((e) => setError(e.message));
@@ -26,7 +28,10 @@ export default function Lessons() {
   return (
     <div>
       <h1>Lesson Library</h1>
-      <p>Curated lessons on tactics, openings, endgames, and strategy — highlighted picks are tailored to your weaknesses.</p>
+      <p>
+        Curated lessons on tactics, openings, endgames, strategy, and mindset — each grounded in a specific classic book
+        or well-known training resource. Highlighted picks are tailored to your weaknesses.
+      </p>
 
       {error && <div className="card" style={{ borderColor: 'var(--danger)', marginBottom: 16 }}>{error}</div>}
 
@@ -37,7 +42,53 @@ export default function Lessons() {
             {c}
           </button>
         ))}
+        <button
+          className="btn secondary"
+          style={{ marginLeft: 'auto' }}
+          onClick={() => setShowResources((v) => !v)}
+        >
+          {showResources ? 'Hide' : 'Show'} best books &amp; sites
+        </button>
       </div>
+
+      {showResources && (
+        <div className="card" style={{ marginBottom: 24 }}>
+          <h3>Best chess books &amp; sites</h3>
+          <p>
+            A curated list of the resources this lesson library draws on — well worth going straight to the source once
+            a topic here catches your interest.
+          </p>
+          <div className="grid grid-2" style={{ marginTop: 12 }}>
+            <div>
+              <h3 style={{ fontSize: '1rem' }}>Books</h3>
+              <ul className="list-plain">
+                {BOOKS.map((b) => (
+                  <li key={b.title} style={{ padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ fontWeight: 600 }}>{b.title}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)', margin: '2px 0 6px' }}>
+                      {b.author} · {b.level}
+                    </div>
+                    <div style={{ fontSize: '0.85rem' }}>{b.note}</div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1rem' }}>Sites</h3>
+              <ul className="list-plain">
+                {SITES.map((s) => (
+                  <li key={s.name} style={{ padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ fontWeight: 600 }}>
+                      <a href={s.url} target="_blank" rel="noreferrer">{s.name}</a>
+                    </div>
+                    <div style={{ fontSize: '0.85rem', marginTop: 4 }}>{s.note}</div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
 
       {username && !weakness?.recommendedLessons?.length && (
         <div className="card" style={{ marginBottom: 20 }}>
@@ -55,6 +106,9 @@ export default function Lessons() {
               <span className="tag">{lesson.category}</span>
               <span className="tag">{lesson.level}</span>
             </div>
+            {lesson.source && (
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: 8, marginBottom: 0 }}>{lesson.source}</p>
+            )}
           </Link>
         ))}
       </div>

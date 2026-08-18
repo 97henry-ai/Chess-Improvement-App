@@ -297,7 +297,8 @@ export default function Analyzer() {
           {games.map((g) => (
             <li key={g.id} className="move-row card" style={{ marginBottom: 6 }} onClick={() => navigate(`/analyzer/${g.id}`)}>
               <span>
-                {g.player_color === 'white' ? 'White' : 'Black'} · {g.time_class} · {g.opening_name || 'Unknown opening'}
+                <strong>{g.white}</strong> ({g.white_rating}) vs <strong>{g.black}</strong> ({g.black_rating}) · {g.time_class} ·{' '}
+                {g.opening_name || 'Unknown opening'}
               </span>
               <span className={`tag ${g.player_result}`}>{g.player_result}</span>
             </li>
@@ -316,7 +317,34 @@ export default function Analyzer() {
       {!game ? (
         <p>Loading game…</p>
       ) : (
-        <div className="grid" style={{ gridTemplateColumns: '52px minmax(0,460px) 1fr', gap: 20, alignItems: 'start' }}>
+        <>
+          <div className="card" style={{ marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.05rem' }}>
+                <span aria-hidden style={{ fontSize: '1.1rem' }}>♔</span>
+                <strong>{game.white || 'White'}</strong>
+                {game.white_rating && <span className="tag">{game.white_rating}</span>}
+                {game.player_color === 'white' && <span className="tag win">you</span>}
+              </div>
+              <span style={{ color: 'var(--text-dim)' }}>vs</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.05rem' }}>
+                <span aria-hidden style={{ fontSize: '1.1rem' }}>♚</span>
+                <strong>{game.black || 'Black'}</strong>
+                {game.black_rating && <span className="tag">{game.black_rating}</span>}
+                {game.player_color === 'black' && <span className="tag win">you</span>}
+              </div>
+              <span className={`tag ${game.player_result}`} style={{ marginLeft: 'auto' }}>
+                {game.player_result === 'win' ? 'You won' : game.player_result === 'loss' ? 'You lost' : 'Draw'}
+              </span>
+            </div>
+            <div className="badge-row" style={{ marginTop: 10, marginBottom: 0 }}>
+              {game.time_class && <span className="tag">{game.time_class}</span>}
+              {game.opening_name && <span className="tag">{game.opening_name}</span>}
+              {game.end_time && <span className="tag">{new Date(game.end_time * 1000).toLocaleDateString()}</span>}
+            </div>
+          </div>
+
+          <div className="grid" style={{ gridTemplateColumns: '52px minmax(0,460px) 1fr', gap: 20, alignItems: 'start' }}>
           <div>
             <div className="eval-bar-wrap" style={{ height: 460 }}>
               <div className="eval-bar-fill" style={{ height: `${evalBarHeight(currentPly?.evalAfter !== undefined ? { cp: currentPly.evalAfter } : null)}%` }} />
@@ -433,6 +461,7 @@ export default function Analyzer() {
             </ul>
           </div>
         </div>
+        </>
       )}
     </div>
   );

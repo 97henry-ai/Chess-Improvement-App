@@ -4,12 +4,16 @@
     "title": "Pins and Skewers",
     "category": "tactics",
     "level": "beginner",
-    "summary": "Learn to spot and exploit pins and skewers, two of the most common tactical motifs at every level.",
+    "summary": "The two most common tactical motifs in chess — learn to spot them, create them, and defend against them.",
     "themeTags": ["pin", "skewer"],
+    "source": "Concept covered in Yasser Seirawan's Winning Chess Tactics and every major puzzle trainer (Chess.com, Lichess, ChessTempo)",
     "content": [
-      "A pin restricts a piece from moving because doing so would expose a more valuable piece behind it.",
-      "A skewer is the reverse: the more valuable piece is in front and forced to move, exposing the piece behind it.",
-      "Look for enemy pieces lined up on the same rank, file, or diagonal as their king or queen."
+      "A pin restricts a piece from moving because doing so would expose a more valuable piece (often the king) behind it on the same rank, file, or diagonal.",
+      "An absolute pin is against the king and is illegal to break; a relative pin is against a piece like the queen and can technically be broken, but usually at a cost.",
+      "A skewer is a pin in reverse: the more valuable piece is in front and forced to move, exposing the piece behind it to capture.",
+      "Bishops, rooks, and queens create pins and skewers; knights and pawns cannot, since they don't move in straight lines.",
+      "Before every move, scan for enemy pieces lined up with their king or queen on an open rank, file, or diagonal — that's a pin or skewer waiting to happen.",
+      "To defend against a pin, you can block it, capture the pinning piece, or simply move the pinned piece if it's only relatively pinned."
     ]
   },
   {
@@ -17,12 +21,48 @@
     "title": "Forks: Attacking Two Pieces at Once",
     "category": "tactics",
     "level": "beginner",
-    "summary": "Knights, pawns, and queens can all fork multiple targets. Train your pattern recognition.",
-    "themeTags": ["fork"],
+    "summary": "A single move that attacks two or more targets simultaneously — knight forks are the most feared, but any piece can fork.",
+    "themeTags": ["fork", "double-attack"],
+    "source": "A core theme in Winning Chess Tactics by Yasser Seirawan and the tactics-trainer curricula at Chess.com and Lichess",
     "content": [
-      "A fork is a single move that attacks two or more enemy pieces simultaneously.",
-      "Knight forks are especially dangerous because knights attack in an L-shape that's easy to miss.",
-      "Before every move, scan for undefended or equally-valuable enemy pieces a knight jump away."
+      "A fork is a single move that attacks two or more enemy pieces at the same time, so the opponent can only save one.",
+      "Knight forks are especially dangerous because knights move in an L-shape that's easy to miss when scanning a position visually.",
+      "The classic 'family fork' is a knight simultaneously attacking the king, queen, and a rook — often winning material outright.",
+      "Pawns can fork too: a single pawn advance that attacks two pieces diagonally is a cheap, permanent threat since pawns can't be easily kicked away.",
+      "Before every move, ask: 'if I put a piece on this square, what two things does it attack?' — this habit alone finds most forks.",
+      "The best defense against a fork is prevention: avoid placing two valuable pieces on squares a knight or pawn could jump into at the same time."
+    ]
+  },
+  {
+    "id": "tactics-discovered-attacks",
+    "title": "Discovered Attacks and Discovered Check",
+    "category": "tactics",
+    "level": "intermediate",
+    "summary": "Move one piece out of the way and unleash an attack from another — one of the most powerful and hardest-to-see tactical devices.",
+    "themeTags": ["discovered-attack", "discovered-check"],
+    "source": "Classified as one of the core 'combinative motifs' in Maxim Blokh's Combinative Motifs and covered extensively in CT-ART",
+    "content": [
+      "A discovered attack happens when you move a piece out of the way of another piece behind it, revealing a new attack — the moving piece can do something else entirely, like capture or give check itself.",
+      "A discovered check is the most dangerous version: moving piece A reveals check from piece B, so the moving piece is completely free to do whatever it wants, even hang itself, because the opponent must deal with the check first.",
+      "Double check — where both the moving piece and the revealed piece give check simultaneously — can only be answered by moving the king, since blocking or capturing can't stop two checks at once.",
+      "To find discovered attacks, look for your own pieces lined up on the same rank, file, or diagonal, with a valuable enemy piece at the far end.",
+      "Defensively, be wary when an opponent's piece sits in front of another one of their pieces that's aimed at your king or queen — that lined-up piece could move at any time."
+    ]
+  },
+  {
+    "id": "tactics-deflection",
+    "title": "Removing the Defender: Deflection and Decoy",
+    "category": "tactics",
+    "level": "intermediate",
+    "summary": "Many combinations start by forcing a key defensive piece away from the square or piece it's protecting.",
+    "themeTags": ["deflection", "decoy"],
+    "source": "A recurring theme in Fred Reinfeld's 1001 Chess Sacrifices and Combinations and the Art of Attack tradition",
+    "content": [
+      "Deflection forces a defending piece away from its job — often with a check, a capture, or a threat it can't ignore — so you can exploit whatever it was protecting.",
+      "Decoy is the mirror image: you lure an enemy piece (often the king) onto a bad square, then punish it there, typically with a check or fork.",
+      "Ask yourself: 'which enemy piece is doing the most defensive work right now, and can I make it leave?' That single question uncovers a huge number of combinations.",
+      "Sacrifices are frequently just deflections in disguise — giving up material to force a defender away is 'worth it' if it wins back more material or delivers checkmate.",
+      "When defending, be conscious of pieces that are your position's sole defender of something critical — doubling up defense on key squares removes this vulnerability."
     ]
   },
   {
@@ -30,12 +70,31 @@
     "title": "Back-Rank Weaknesses",
     "category": "tactics",
     "level": "intermediate",
-    "summary": "Understand how to create and defend against back-rank mate threats.",
+    "summary": "A king trapped behind its own pawns on the back rank is one of the most common ways games are decided.",
     "themeTags": ["back-rank", "checkmate-patterns"],
+    "source": "A staple pattern in Irving Chernev's Logical Chess Move by Move and every tactics trainer's puzzle set",
     "content": [
-      "A king castled behind its own pawns with no escape square is vulnerable to back-rank mate.",
-      "Giving your king a 'luft' (escape square) is one of the simplest ways to avoid this.",
-      "When attacking, look for ways to remove defenders of the back rank or infiltrate with a rook/queen."
+      "A king castled behind its own unmoved pawns, with no escape square, is vulnerable to being checkmated by a rook or queen infiltrating the back rank.",
+      "Giving your king 'luft' — an escape square, usually by pushing a pawn one square in front of it — is one of the simplest habits that prevents back-rank disasters.",
+      "When attacking, look for ways to remove or deflect the defenders of the back rank, or to infiltrate with a rook or queen supported by another piece.",
+      "Watch out for back-rank tactics even when material looks balanced — a queen trade can suddenly expose a back-rank weakness that wasn't visible before.",
+      "A rook on the seventh (or second) rank combined with an undefended back rank is often enough to win material or force mate on its own."
+    ]
+  },
+  {
+    "id": "tactics-mating-patterns",
+    "title": "Classic Mating Patterns",
+    "category": "tactics",
+    "level": "intermediate",
+    "summary": "Named checkmate patterns — smothered mate, Boden's mate, Anastasia's mate — that recur across thousands of real games.",
+    "themeTags": ["checkmate-patterns", "smothered-mate"],
+    "source": "Cataloged in Georges Renaud and Victor Kahn's classic The Art of the Checkmate",
+    "content": [
+      "Smothered mate: a knight delivers checkmate to a king that's completely boxed in by its own pieces, often set up with a queen sacrifice to force the king into the corner.",
+      "Boden's mate: two bishops on criss-crossing diagonals deliver mate to a king that has castled — a common pattern after the opponent's own pieces block their king's escape.",
+      "Anastasia's mate: a knight and rook combine to trap a king against the edge of the board, with the knight cutting off the escape squares.",
+      "Learning named patterns by name and shape means you'll recognize the setup mid-game, even if the exact position looks different from the textbook example.",
+      "Study a handful of these patterns deeply rather than memorizing dozens shallowly — recognizing the shape matters more than knowing the name."
     ]
   },
   {
@@ -43,12 +102,16 @@
     "title": "Opening Principles After 1.e4",
     "category": "openings",
     "level": "beginner",
-    "summary": "Core opening principles: control the center, develop knights before bishops, castle early.",
+    "summary": "The core opening principles that apply almost regardless of what your opponent plays: center, development, king safety.",
     "themeTags": ["opening-theory"],
+    "source": "Distilled from Paul van der Sterren's Fundamental Chess Openings and Yasser Seirawan's Winning Chess Openings",
     "content": [
-      "Fight for the center with pawns and pieces in the first few moves.",
-      "Develop minor pieces (knights and bishops) before moving the same piece twice.",
-      "Castle early to get your king to safety and connect your rooks."
+      "Fight for the center with pawns and pieces in the first few moves — controlling e4/e5/d4/d5 gives your pieces more squares and restricts your opponent's.",
+      "Develop your minor pieces (knights and bishops) before moving the same piece twice or bringing your queen out early.",
+      "Castle early, ideally within the first 6-10 moves, to get your king to safety and connect your rooks.",
+      "Avoid unnecessary pawn moves in the opening — every pawn push that doesn't help development or the center is often better used elsewhere.",
+      "Don't chase material at the cost of development — a pawn grabbed early that costs you three tempi of development is rarely worth it below master level.",
+      "A useful checklist for your first ten moves: am I developing a piece, contesting the center, or improving king safety? If not, reconsider the move."
     ]
   },
   {
@@ -56,12 +119,63 @@
     "title": "Understanding the Queen's Gambit",
     "category": "openings",
     "level": "intermediate",
-    "summary": "Learn the ideas behind 1.d4 d5 2.c4 and how to handle both accepted and declined lines.",
+    "summary": "The ideas behind 1.d4 d5 2.c4 — one of the oldest and most respected openings in chess.",
     "themeTags": ["opening-theory", "queens-pawn"],
+    "source": "Covered in depth in Fundamental Chess Openings (van der Sterren) and countless Chess.com/Lichess opening courses",
     "content": [
-      "White offers the c-pawn to open lines and gain central control; Black is not obligated to accept.",
-      "In the Queen's Gambit Declined, Black supports d5 and aims for solid, classical development.",
-      "If Black accepts (QGA), White regains the pawn with active piece play rather than rushing to recapture immediately."
+      "White offers the c-pawn to open lines and gain central influence; it's not a 'true' gambit since White usually regains the pawn or gets ample compensation.",
+      "In the Queen's Gambit Declined, Black supports d5 with ...e6, aiming for solid, classical development at the cost of a slightly passive light-squared bishop.",
+      "In the Queen's Gambit Accepted, Black grabs the c4 pawn temporarily; White doesn't rush to recapture it, instead developing quickly and using the extra central space.",
+      "The Slav Defense (...c6 instead of ...e6) is a popular alternative for Black that keeps the light-squared bishop active outside the pawn chain.",
+      "Understanding the pawn structures that result from each line matters more than memorizing exact move orders — the structure dictates the middlegame plans for both sides."
+    ]
+  },
+  {
+    "id": "openings-italian-ruy-lopez",
+    "title": "The Italian Game and Ruy Lopez",
+    "category": "openings",
+    "level": "beginner",
+    "summary": "The two classical main lines after 1.e4 e5 2.Nf3 Nc6 — a great foundation for understanding open positions.",
+    "themeTags": ["opening-theory", "italian-ruy-lopez"],
+    "source": "Foundational material in Fundamental Chess Openings and the classic instructive games in Chernev's Logical Chess Move by Move",
+    "content": [
+      "The Italian Game (3.Bc4) aims the bishop straight at Black's weak f7 square, and leads to sharp, tactical play if Black isn't careful (watch for the Fried Liver Attack).",
+      "The Ruy Lopez (3.Bb5) pressures the knight defending e5 indirectly, and is considered the most rigorously tested opening in chess history.",
+      "Both openings share the same core plan: fast development, central control, and early castling, making them ideal for learning sound opening principles.",
+      "In the Ruy Lopez, Black's most common reply, 3...a6 (the Morphy Defense), asks the bishop an immediate question, usually met by 4.Ba4 or 4.Bxc6.",
+      "Playing 1.e4 e5 openings as either color is one of the best ways to learn classical chess strategy, because both sides fight directly for the center from move one."
+    ]
+  },
+  {
+    "id": "openings-sicilian",
+    "title": "The Sicilian Defense: Fighting for Asymmetry",
+    "category": "openings",
+    "level": "intermediate",
+    "summary": "1.e4 c5 is the most popular response to 1.e4 at every level, trading structural symmetry for dynamic counterplay.",
+    "themeTags": ["opening-theory", "sicilian"],
+    "source": "One of the most analyzed openings in chess literature, central to Fundamental Chess Openings and countless dedicated repertoire books",
+    "content": [
+      "Unlike 1...e5, the Sicilian avoids mirroring White's central pawn, instead striking on the queenside and creating an unbalanced position from move one.",
+      "Common main lines include the Najdorf (2...d6, 3...a6), the Dragon (a fianchettoed bishop on g7), and the Accelerated Dragon — each with very different middlegame plans.",
+      "Because the position is asymmetric, both sides usually have realistic winning chances, which is why the Sicilian is a favorite of players trying to play for a win with Black.",
+      "Sicilian positions often feature opposite-side castling, which raises the stakes: both sides race to attack the other's king rather than maneuvering slowly.",
+      "The Sicilian rewards concrete calculation and opening knowledge more than most e4 openings — it's worth picking one main line and learning it in real depth rather than playing it superficially."
+    ]
+  },
+  {
+    "id": "openings-common-traps",
+    "title": "Common Opening Traps to Know",
+    "category": "openings",
+    "level": "beginner",
+    "summary": "A handful of recurring opening traps — knowing them saves games, and knowing the defense saves you from falling into them.",
+    "themeTags": ["opening-theory", "opening-traps"],
+    "source": "A staple topic across Chess.com's opening lessons and beginner-focused chess literature",
+    "content": [
+      "Scholar's Mate (Qh5/Qf3 + Bc4 targeting f7) is the most common trap at the beginner level — the simple defense is to develop naturally and watch for early queen sorties.",
+      "The Fried Liver Attack punishes early knight development into the Italian Game's Two Knights Defense if Black isn't precise — know the defensive move 6...Kxf7 is actually fine for Black with correct follow-up, or avoid the line with 4...Bc5 instead.",
+      "Legal's Mate traps a pinned knight that's asked to do too much — a reminder that a pin only holds if the pinned piece's job is more important than what you give up capturing it.",
+      "Traps rely on the opponent making a natural-looking but flawed move — the best long-term defense against traps isn't memorization, but understanding why the trapping move works.",
+      "Relying purely on traps against strong opposition is a losing strategy — use them as a bonus while your main development is always sound."
     ]
   },
   {
@@ -69,12 +183,15 @@
     "title": "King and Pawn Endgames: Opposition",
     "category": "endgames",
     "level": "intermediate",
-    "summary": "Master the concept of opposition, the foundation of nearly all king-and-pawn endgames.",
+    "summary": "Opposition is the foundational concept behind nearly every king-and-pawn endgame.",
     "themeTags": ["king-and-pawn-endgame"],
+    "source": "Chapter one material in Silman's Complete Endgame Course and Basic Chess Endings by Reuben Fine",
     "content": [
-      "Opposition means the kings face each other with one square between them, and it's the opponent's move.",
-      "Whoever is forced to move away from opposition typically loses ground in the endgame.",
-      "Practice the 'square rule' to quickly determine whether a king can catch a passed pawn."
+      "Opposition means the two kings face each other with exactly one square between them on the same rank, file, or diagonal — whoever is NOT forced to move has the opposition.",
+      "The side forced to move away from opposition typically has to give ground, letting the opponent's king advance further into the position.",
+      "The 'rule of the square': to know if a king can catch a passed pawn, draw a square from the pawn to its promotion square — if the defending king can step inside that square on its move, it catches the pawn.",
+      "In a king and pawn vs king endgame, the attacking king generally needs to get in front of its own pawn (not behind it) to escort it to promotion.",
+      "Distant opposition (kings several squares apart on the same line, with an odd number of squares between them) follows the same principle as direct opposition and is often the key to winning technique."
     ]
   },
   {
@@ -82,12 +199,79 @@
     "title": "Essential Rook Endgame Techniques",
     "category": "endgames",
     "level": "advanced",
-    "summary": "Rook endgames are the most common endgame type. Learn the Lucena and Philidor positions.",
+    "summary": "Rook endgames are the most common endgame type in practical play — the Lucena and Philidor positions are must-know technique.",
     "themeTags": ["rook-endgame", "endgame-technique"],
+    "source": "Extensively covered in Dvoretsky's Endgame Manual and Jesús de la Villa's 100 Endgames You Must Know",
     "content": [
-      "The Lucena position is a winning technique for the side with an extra pawn and a rook, using the 'building a bridge' idea.",
-      "The Philidor position is a key drawing technique for the defending side.",
-      "Active rooks are almost always better than passive ones — activity often outweighs material in rook endgames."
+      "The Lucena position is the fundamental winning technique for the side with an extra pawn and a rook: 'building a bridge' with your own rook shields your king from checks so the pawn can promote.",
+      "The Philidor position is the key drawing technique for the side defending a rook endgame down a pawn: keeping the rook on the third/sixth rank cuts off the attacking king until the pawn advances, then switching to checks from behind.",
+      "Active rooks are almost always better than passive ones — a rook behind a passed pawn (yours or the opponent's) is a classic principle worth remembering in any rook endgame.",
+      "Cutting off the enemy king with your rook — restricting which files or ranks it can cross — is often more valuable than grabbing a pawn.",
+      "When defending a worse rook endgame, activity and checks are your best resource; a passive rook defending pawns tends to lose slowly, even in objectively drawn positions."
+    ]
+  },
+  {
+    "id": "endgame-passed-pawns",
+    "title": "The Rule of the Square and Passed Pawns",
+    "category": "endgames",
+    "level": "beginner",
+    "summary": "A passed pawn — one with no enemy pawns able to stop it — becomes more dangerous as pieces come off the board.",
+    "themeTags": ["passed-pawn", "square-rule"],
+    "source": "Core material in Silman's Complete Endgame Course, organized by rating level from beginner to master",
+    "content": [
+      "A passed pawn has no enemy pawns on its own file or the adjacent files ahead of it, meaning nothing but pieces (usually the king) can stop it from promoting.",
+      "'Passed pawns must be pushed' is a classic principle — but pushing too early, without support, can just hand the pawn to the opponent for free.",
+      "A protected passed pawn (one defended by another pawn) is especially strong because a piece alone often can't win it, and it ties down enemy pieces to blockade it.",
+      "Use the rule of the square to quickly judge king-vs-pawn races without calculating every move: if the defending king can step into the pawn's 'square,' it catches it.",
+      "In the endgame, a passed pawn's value increases the fewer pieces are on the board — what's a minor threat in the middlegame can become winning in a pure king-and-pawn ending."
+    ]
+  },
+  {
+    "id": "endgame-basic-checkmates",
+    "title": "Basic Checkmates You Must Know",
+    "category": "endgames",
+    "level": "beginner",
+    "summary": "King and queen vs king, and king and rook vs king — the two checkmates every player must be able to deliver on autopilot.",
+    "themeTags": ["basic-checkmates"],
+    "source": "The starting point of Silman's Complete Endgame Course (rated 'Class E,' its most fundamental level)",
+    "content": [
+      "King and queen vs king: herd the enemy king to the edge of the board by taking away squares with the queen a knight's-move away from the king, then bring your own king up to help deliver mate.",
+      "King and rook vs king: box the enemy king into a shrinking rectangle using the rook, then use your own king to force it to the edge before the rook delivers the final check.",
+      "A common beginner mistake is delivering stalemate instead of checkmate — always double-check the enemy king has at least one legal move before making a 'safe' king-restricting move.",
+      "These endgames should become completely automatic — practicing them until you can deliver mate confidently in under 15 moves removes one entire category of frustrating draws from your games.",
+      "Once king+queen and king+rook mates are second nature, king and two bishops vs king, and king+bishop+knight vs king, are natural next steps to study."
+    ]
+  },
+  {
+    "id": "endgame-opposite-bishops",
+    "title": "Opposite-Colored Bishop Endgames",
+    "category": "endgames",
+    "level": "advanced",
+    "summary": "Famous for their drawing tendency — but also capable of producing some of the sharpest attacking chess in the whole game.",
+    "themeTags": ["opposite-bishops"],
+    "source": "A dedicated chapter in Dvoretsky's Endgame Manual, known for its counterintuitive practical lessons",
+    "content": [
+      "In pure opposite-colored bishop endgames (no other pieces), being up two pawns is often not enough to win — the defending bishop can blockade squares the attacker's bishop can never control.",
+      "Ironically, opposite-colored bishops with major pieces still on the board (queens or rooks) tend to favor the attacker, since the bishop can support an attack on squares the opponent's own bishop can't defend.",
+      "Fixing pawns on the same color as your opponent's bishop (and off the color of your own) makes those pawns much harder for them to defend and easier for you to attack.",
+      "Don't assume 'opposite bishops means automatic draw' — that folk wisdom only reliably applies in pure bishop endgames with limited pawns, not in complex middlegame-adjacent positions.",
+      "When defending a pawn-down opposite-bishop endgame, look for a blockade square your bishop controls that the attacking pawns simply cannot get past."
+    ]
+  },
+  {
+    "id": "endgame-knight-vs-bishop",
+    "title": "Knight vs Bishop Endgames",
+    "category": "endgames",
+    "level": "advanced",
+    "summary": "Whether the bishop or knight is stronger depends entirely on the pawn structure — learn to judge which piece an endgame favors.",
+    "themeTags": ["knight-vs-bishop"],
+    "source": "A recurring theme in Jeremy Silman's How to Reassess Your Chess, framed through his 'imbalances' method",
+    "content": [
+      "Bishops are generally stronger in open positions with pawns on both sides of the board, since their long range covers more ground than a knight's.",
+      "Knights are generally stronger in closed, blocked positions or when the action is concentrated on one side of the board, since they can hop over obstacles bishops can't cross.",
+      "A 'bad bishop' — blocked in by its own pawns on its own color — can be worse than a knight even in an otherwise open position.",
+      "Before trading a bishop for a knight (or vice versa), assess the resulting pawn structure: will it be open or closed, one-sided or two-sided?",
+      "Knights need outposts (protected squares the opponent's pawns can't attack) to reach their full strength — without one, a knight can become passive and short-range for the rest of the game."
     ]
   },
   {
@@ -95,12 +279,15 @@
     "title": "Knight Outposts and Piece Activity",
     "category": "strategy",
     "level": "intermediate",
-    "summary": "Learn how to identify and use strong outpost squares for your pieces.",
+    "summary": "A knight on a strong, protected square in enemy territory can be worth more than a rook.",
     "themeTags": ["outpost"],
+    "source": "A central idea in Aron Nimzowitsch's My System, one of the most influential strategy books ever written",
     "content": [
-      "An outpost is a square, usually in enemy territory, that cannot be attacked by enemy pawns.",
-      "Knights are especially strong on outposts since they can't be easily kicked away.",
-      "Trade off the opponent's pieces that could challenge your outpost, such as their fianchettoed bishop."
+      "An outpost is a square, usually in enemy territory, that can never be attacked by an enemy pawn because the pawns that would attack it are gone or structurally unable to.",
+      "Knights benefit from outposts more than any other piece, since a well-placed knight can't easily be dislodged and often dominates the position from a single square.",
+      "Trade off the opponent's pieces that could challenge your outpost — for example, trading away their fianchettoed bishop that's the only piece able to contest a dark-square outpost.",
+      "Nimzowitsch's original insight was that controlling a square matters as much as occupying it — sometimes the mere threat of a knight landing on an outpost restrains the opponent's whole position.",
+      "When your opponent has an outpost, look for pawn breaks that undermine the square's protection, even if it costs a tempo — leaving a dominant enemy knight in place indefinitely is rarely acceptable."
     ]
   },
   {
@@ -108,12 +295,63 @@
     "title": "Pawn Structure Fundamentals: Isolated and Passed Pawns",
     "category": "strategy",
     "level": "advanced",
-    "summary": "Recognize strong and weak pawn structures to guide your strategic plans.",
+    "summary": "Recognizing strong and weak pawn structures is the backbone of forming a long-term strategic plan.",
     "themeTags": ["isolated-pawn", "pawn-break"],
+    "source": "Extensively catalogued in Nimzowitsch's My System and revisited through Silman's 'imbalances' framework in How to Reassess Your Chess",
     "content": [
-      "An isolated pawn has no friendly pawns on adjacent files and can become a long-term weakness.",
-      "Passed pawns (no enemy pawns can stop them from promoting) grow more valuable as pieces are traded off.",
-      "Blockading an isolated or passed pawn with a piece, especially a knight, neutralizes its strength."
+      "An isolated pawn has no friendly pawns on adjacent files, making it a long-term target that can never be defended by another pawn.",
+      "Despite the weakness, an isolated queen's pawn (the 'IQP') often grants active piece play and open lines in the middlegame — it's usually a good trade in the middlegame and a liability in the endgame.",
+      "Passed pawns grow more valuable as pieces are traded off the board, since fewer pieces remain that could blockade or capture them.",
+      "Blockading a dangerous pawn — placing a piece (ideally a knight) directly in front of it — is often the cleanest way to neutralize it completely, per Nimzowitsch's original blockade concept.",
+      "A pawn break is a pawn move that challenges the opponent's structure, often sacrificing a pawn's static safety to open lines for your pieces — timing these breaks correctly is a core strategic skill."
+    ]
+  },
+  {
+    "id": "strategy-weak-squares",
+    "title": "Weak Squares and Color Complexes",
+    "category": "strategy",
+    "level": "advanced",
+    "summary": "A 'weak square' that can never be defended by a pawn becomes a long-term home for an enemy piece — learn to spot and exploit them.",
+    "themeTags": ["weak-squares", "color-complex"],
+    "source": "A key 'imbalance' in Jeremy Silman's How to Reassess Your Chess, which reframed classical strategy for modern learners",
+    "content": [
+      "A weak square is one that can never again be attacked by a pawn of the color that would need to defend it — usually created by an early or careless pawn advance.",
+      "A 'color complex' weakness happens when one side loses control of all the squares of one color, often after trading away the bishop that covered that color.",
+      "The classic warning sign is trading your dark-squared bishop after fianchettoing it (g2/g7), which can leave every dark square around your king permanently weak.",
+      "Weak squares are only a problem if the opponent has a piece that can actually reach and use them — a weak square with no enemy piece able to occupy it is a much smaller concern.",
+      "When you spot a weak square in your own position, look for ways to trade off the pieces that would exploit it, or to avoid creating the weakness altogether by choosing a different pawn move."
+    ]
+  },
+  {
+    "id": "strategy-prophylaxis",
+    "title": "Prophylaxis: Thinking About Your Opponent's Plan",
+    "category": "strategy",
+    "level": "advanced",
+    "summary": "Before asking 'what's my best move,' ask 'what does my opponent want to do' — one of chess's most important habits of thought.",
+    "themeTags": ["prophylaxis"],
+    "source": "The signature concept of Aron Nimzowitsch's My System, later expanded by many grandmaster authors including Mark Dvoretsky",
+    "content": [
+      "Prophylactic thinking means making a move specifically to prevent your opponent's best plan, even if it doesn't directly advance your own position.",
+      "Nimzowitsch argued that restraining an opponent's pawn breaks or piece maneuvers is often more valuable than a move that looks more 'active' but ignores their plans.",
+      "A simple prophylactic habit: after considering your own candidate moves, spend one thought cycle asking 'if it were my opponent's move right now with no threat from me, what would they play?'",
+      "Prophylaxis is especially important in closed and strategic positions, where a well-timed restraining move can permanently cripple the opponent's plan before it starts.",
+      "Overusing prophylaxis has a cost too — purely defensive, passive play with no plan of your own eventually allows the opponent to build up pressure unopposed."
+    ]
+  },
+  {
+    "id": "strategy-bishop-pair",
+    "title": "The Bishop Pair and Open Positions",
+    "category": "strategy",
+    "level": "intermediate",
+    "summary": "Two bishops working together cover every square on the board — a long-term advantage worth understanding and fighting for.",
+    "themeTags": ["bishop-pair"],
+    "source": "Discussed as a core static advantage throughout How to Reassess Your Chess by Jeremy Silman",
+    "content": [
+      "The 'bishop pair' refers to having both bishops while your opponent has traded one away — together, they control both light and dark squares in a way no other piece combination can.",
+      "The bishop pair is usually strongest in open positions with pawns on both wings, where its long diagonals have the most scope.",
+      "In closed or blocked positions, the bishop pair's advantage shrinks significantly, sometimes to nothing — a pair of bishops with no open diagonals isn't worth much.",
+      "A common strategic plan when holding the bishop pair is to deliberately open the position (via pawn trades or breaks) to maximize the bishops' influence.",
+      "When you're the side without the bishop pair, aim to keep the position closed and create outposts for your knights to compensate for the long-term structural concession."
     ]
   },
   {
@@ -121,12 +359,63 @@
     "title": "Time Management in Fast Time Controls",
     "category": "mindset",
     "level": "beginner",
-    "summary": "Practical tips for managing your clock in blitz and rapid games without blundering.",
+    "summary": "Practical tips for managing your clock in blitz and rapid games without blundering under pressure.",
     "themeTags": ["time-management"],
+    "source": "Practical advice echoed across Chess.com and Lichess blitz strategy guides",
     "content": [
-      "Spend more time in critical, unclear positions and less time on forced or obvious moves.",
-      "Avoid moving instantly out of habit — even one extra second of checking for tactics prevents many blunders.",
-      "If you're low on time, prioritize keeping your king safe and simplifying to a position you understand."
+      "Spend more time in critical, unclear positions and less time on forced or obvious moves — not every move deserves equal thought.",
+      "Avoid moving instantly out of habit, especially in the opening; even one extra second of double-checking for tactics prevents a large share of blunders.",
+      "If you're low on time, prioritize keeping your king safe and simplifying into a position you understand, rather than trying to calculate a long forcing sequence.",
+      "Playing slightly slower, more solid openings you know well reduces decision fatigue early in the game, leaving more clock time for the complex middlegame.",
+      "Track whether your losses cluster in time trouble — if they do, the fix is often pre-game opening prep, not faster calculation."
+    ]
+  },
+  {
+    "id": "mindset-blunder-checklist",
+    "title": "Building a Pre-Move Blunder Checklist",
+    "category": "mindset",
+    "level": "beginner",
+    "summary": "A short mental checklist before every move catches the vast majority of blunders — the single highest-leverage habit you can build.",
+    "themeTags": ["blunder-check"],
+    "source": "Popularized as 'Real Chess' thinking by chess coach Dan Heisman, and echoed by nearly every modern chess coach",
+    "content": [
+      "Before playing a move, ask: does this move hang a piece, allow a check I haven't considered, or walk into a tactic on the square I'm leaving?",
+      "Check every capture and check available to your opponent after your intended move — most blunders are a missed capture or check, not a missed deep plan.",
+      "A simple habit: scan all of your opponent's pieces and ask what each one attacks after your move, not just the piece you just moved.",
+      "This checklist takes seconds once it's a habit, but skipping it — especially when a move 'feels obviously good' — is exactly when blunders slip through.",
+      "Review your own games afterward and categorize losses: was it a missed tactic, a bad plan, or a mistake caused by rushing? Most improving players find the checklist alone fixes a large share of losses."
+    ]
+  },
+  {
+    "id": "mindset-study-your-games",
+    "title": "How to Study Your Own Games",
+    "category": "mindset",
+    "level": "intermediate",
+    "summary": "Analyzing your own losses (and wins) is one of the most effective ways to improve — more effective than passively watching content.",
+    "themeTags": ["self-analysis"],
+    "source": "A central theme of Jeremy Silman's The Amateur's Mind, which analyzes real students' games and thought processes",
+    "content": [
+      "Before turning on an engine, try to find your own mistakes first — the process of searching for the error trains your pattern recognition far more than being told the answer.",
+      "Look for the moment the evaluation swung, then ask why: was it a tactic you missed, a plan that didn't fit the position, or a misjudged trade?",
+      "Track recurring themes across multiple games — if you keep losing to the same kind of tactic or falling into the same kind of bad structure, that's your highest-priority thing to study next.",
+      "Don't only study your losses — understanding why your winning moves worked reinforces good patterns just as effectively as understanding why bad moves failed.",
+      "Silman's key insight in The Amateur's Mind is that most improving players misjudge positions because of faulty thinking patterns, not a lack of raw calculation ability — self-analysis is how you find and fix those patterns."
+    ]
+  },
+  {
+    "id": "mindset-opening-repertoire",
+    "title": "Building an Opening Repertoire You Actually Understand",
+    "category": "mindset",
+    "level": "intermediate",
+    "summary": "A small, well-understood repertoire beats a large, memorized one — especially once your opponent leaves 'known' territory.",
+    "themeTags": ["opening-repertoire"],
+    "source": "A recurring theme across Winning Chess Openings by Yasser Seirawan and modern repertoire-building guides on Chess.com and Lichess",
+    "content": [
+      "Choose openings based on the type of middlegame they lead to, not just the first few moves — an opening you don't enjoy playing in the middlegame won't help you, even if you know the theory.",
+      "Start with 1-2 replies to 1.e4 and 1.d4 as Black, and one solid first move as White, rather than trying to prepare for every possible opening at once.",
+      "Understand the plans and typical pawn structures behind your openings, not just the move order — this is what lets you handle it correctly when your opponent deviates from known theory.",
+      "Expand your repertoire gradually as you notice recurring problems (e.g., 'I keep struggling against the Caro-Kann') rather than trying to prepare for everything up front.",
+      "Review your own games in your main openings periodically — repertoire study is most efficient when it's targeted at lines you've actually had trouble with in real games."
     ]
   }
 ]

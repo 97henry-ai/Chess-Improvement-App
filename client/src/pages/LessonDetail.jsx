@@ -34,6 +34,11 @@ export default function LessonDetail() {
             <li key={i} style={{ marginBottom: 10, lineHeight: 1.6 }}>{point}</li>
           ))}
         </ul>
+        {lesson.source && (
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: 16, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+            Grounded in: {lesson.source}
+          </p>
+        )}
       </div>
       <div className="card" style={{ marginTop: 18 }}>
         <h3>Practice what you learned</h3>
