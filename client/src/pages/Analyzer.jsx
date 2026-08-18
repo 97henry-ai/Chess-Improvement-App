@@ -71,36 +71,83 @@ function pvToSanLine(fen, uciMoves = [], maxPlies = 4) {
   return sans;
 }
 
-/** Build a human-readable explanation of why a move fell short, and what was better. */
+/** Is this a simple pawn push (not a capture/promotion) on a file next to the mover's own king? */
+function isPawnPushNearOwnKing(ply) {
+  const trimmed = ply.san.replace('+', '').replace('#', '');
+  if (!/^[a-h][1-8]$/.test(trimmed)) return false;
+  try {
+    const chess = new Chess(ply.fenBefore);
+    let kingSquare = null;
+    for (const row of chess.board()) {
+      for (const sq of row) {
+        if (sq && sq.type === 'k' && sq.color === ply.color) kingSquare = sq.square;
+      }
+    }
+    if (!kingSquare) return false;
+    return Math.abs(trimmed.charCodeAt(0) - kingSquare.charCodeAt(0)) <= 1;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Build a simple, plain-language breakdown of why a move fell short: what
+ * went wrong, the better move, and a general habit that prevents this same
+ * kind of mistake next time — not just a raw evaluation number.
+ */
 function explainMove(ply) {
   if (!ply.classification || ply.classification === 'best' || ply.classification === 'good') return null;
 
-  const label = ply.classification === 'blunder' ? 'a blunder' : ply.classification === 'mistake' ? 'a mistake' : 'inaccurate';
   const alternatives = (ply.alternatives || []).filter((a) => a.san && a.san !== ply.san);
-  const opponentColor = ply.color === 'w' ? 'Black' : 'White';
+  const better = alternatives[0]?.san || null;
+  const refutation = ply.refutationSan || [];
+  const punishingMove = refutation[0] || null;
 
-  let text;
-  if (ply.evalLoss >= 600) {
-    text = `${ply.san} is ${label} — it walks into a decisive, likely game-losing sequence.`;
+  let why;
+  let tip;
+
+  if (ply.refutationIsMate) {
+    why = `${ply.san} allows your opponent to force checkmate${punishingMove ? ` starting with ${punishingMove}` : ''}.`;
+    tip = 'When your king is exposed, double-check for forced sequences before playing a natural-looking move — a "safe-looking" move can still walk into a forced mate.';
+  } else if (punishingMove?.includes('x')) {
+    why = `${ply.san} leaves a piece where your opponent can simply capture it with ${punishingMove}.`;
+    tip = 'Before you move, check every piece you have — including the one you\'re about to move — and ask "can anything take this for free?"';
+  } else if (refutation.some((m) => m.includes('+'))) {
+    why = `${ply.san} gives your opponent a strong check${punishingMove ? ` (${punishingMove})` : ''} that seizes the initiative.`;
+    tip = "Before playing a quiet move, scan for every check your opponent could give next — checks are forcing and easy to overlook.";
+  } else if (isPawnPushNearOwnKing(ply)) {
+    why = `${ply.san} pushes a pawn near your own king, permanently weakening the squares it used to guard.`;
+    tip = "Avoid pushing pawns in front of your own king unless you have a clear reason — those squares can never be defended by a pawn again.";
+  } else if (ply.evalLoss >= 600) {
+    why = `${ply.san} leads to a much worse position for you, even though it doesn't lose material outright.`;
+    tip = 'When a move looks fine on the surface, calculate 2-3 moves ahead to see how your opponent responds before committing to it.';
   } else {
-    const lossPawns = (ply.evalLoss / 100).toFixed(1);
-    text = `${ply.san} is ${label} — it gives up about ${lossPawns} pawn${lossPawns === '1.0' ? '' : 's'} of evaluation.`;
+    why = better
+      ? `${ply.san} is playable, but ${better} does more — it improves your position or restricts your opponent more effectively.`
+      : `${ply.san} is not the strongest option here.`;
+    tip = 'When no tactic is available, prefer moves that improve your worst-placed piece or increase control of the center.';
   }
 
-  if (alternatives.length) {
-    const [first, ...rest] = alternatives;
-    text += ` The engine preferred ${first.san}`;
-    const others = rest.slice(0, 2).map((a) => a.san);
-    if (others.length) text += ` (or ${others.join(' / ')})`;
-    text += ' instead.';
-  }
+  return { why, better, tip };
+}
 
-  if (ply.refutationSan?.length) {
-    const mateNote = ply.refutationIsMate ? ', leading to forced checkmate' : '';
-    text += ` This lets ${opponentColor} continue with ${ply.refutationSan.join(' ')}${mateNote}.`;
-  }
-
-  return text;
+function ExplanationBlock({ ply, compact }) {
+  const explanation = explainMove(ply);
+  if (!explanation) return null;
+  const size = compact ? '0.8rem' : '0.85rem';
+  return (
+    <div style={{ fontSize: size, lineHeight: 1.5 }}>
+      <p style={{ margin: '0 0 6px' }}>{explanation.why}</p>
+      {explanation.better && (
+        <p style={{ margin: '0 0 6px' }}>
+          <strong>Better move:</strong> {explanation.better}
+        </p>
+      )}
+      <p style={{ margin: 0, color: 'var(--text-dim)' }}>
+        <strong style={{ color: 'var(--text)' }}>How to avoid this:</strong> {explanation.tip}
+      </p>
+    </div>
+  );
 }
 
 function evalLabel(evaluation) {
@@ -405,16 +452,13 @@ export default function Analyzer() {
                     <> — <span className={`classification-${currentPly.classification}`}>{currentPly.classification}</span></>
                   )}
                 </p>
-                {(() => {
-                  const explanation = explainMove(currentPly);
-                  return explanation ? (
-                    <p style={{ fontSize: '0.85rem', lineHeight: 1.55 }}>{explanation}</p>
-                  ) : currentPly.classification === 'best' || currentPly.classification === 'good' ? (
-                    <p style={{ fontSize: '0.85rem' }} className="classification-best">
-                      {currentPly.classification === 'best' ? 'This was the engine\'s top choice.' : 'A strong move — close to the engine\'s top choice.'}
-                    </p>
-                  ) : null;
-                })()}
+                {currentPly.classification === 'best' || currentPly.classification === 'good' ? (
+                  <p style={{ fontSize: '0.85rem' }} className="classification-best">
+                    {currentPly.classification === 'best' ? 'This was the engine\'s top choice.' : 'A strong move — close to the engine\'s top choice.'}
+                  </p>
+                ) : (
+                  <ExplanationBlock ply={currentPly} />
+                )}
               </div>
             )}
 
@@ -458,7 +502,7 @@ export default function Analyzer() {
                       {savedPuzzleIds[p.ply] ? 'Saved ✓' : 'Save as puzzle'}
                     </button>
                   </div>
-                  <p style={{ fontSize: '0.8rem', lineHeight: 1.5, margin: 0 }}>{explainMove(p)}</p>
+                  <ExplanationBlock ply={p} compact />
                 </li>
               ))}
             </ul>
