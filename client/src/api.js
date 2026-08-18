@@ -23,6 +23,7 @@ export const api = {
     }),
   getGames: (username, limit = 50) => request(`/games/${encodeURIComponent(username)}?limit=${limit}`),
   getGamesSummary: (username) => request(`/games/${encodeURIComponent(username)}/summary`),
+  getPerformance: (username) => request(`/games/${encodeURIComponent(username)}/performance`),
   getGameDetail: (gameId) => request(`/games/detail/${gameId}`),
   saveGameAnalysis: (gameId, moves) =>
     request(`/games/detail/${gameId}/analysis`, { method: 'POST', body: JSON.stringify({ moves }) }),

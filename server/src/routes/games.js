@@ -103,6 +103,83 @@ router.get('/:username/summary', (req, res) => {
   res.json(summary);
 });
 
+/**
+ * Aggregate the connected player's own analyzed moves (across all analyzed games)
+ * into three basic facets — opening, middlegame, endgame — each summarized by
+ * average centipawn loss and mistake/blunder counts. This is the data behind
+ * the Dashboard's performance summary and training plan.
+ */
+router.get('/:username/performance', (req, res) => {
+  const { username } = req.params;
+  const games = db.prepare('SELECT id, player_color FROM games WHERE username = ? AND analyzed = 1').all(username);
+
+  const emptyBucket = () => ({ moves: 0, lossSum: 0, best: 0, good: 0, inaccuracy: 0, mistake: 0, blunder: 0 });
+  const phaseBuckets = { opening: emptyBucket(), middlegame: emptyBucket(), endgame: emptyBucket() };
+
+  if (games.length > 0) {
+    const gameById = new Map(games.map((g) => [g.id, g]));
+    const placeholders = games.map(() => '?').join(',');
+    const moveRows = db
+      .prepare(`SELECT game_id, ply, classification, eval_loss FROM game_moves WHERE game_id IN (${placeholders})`)
+      .all(...games.map((g) => g.id));
+
+    const maxPlyByGame = {};
+    for (const row of moveRows) {
+      maxPlyByGame[row.game_id] = Math.max(maxPlyByGame[row.game_id] || 0, row.ply);
+    }
+
+    for (const row of moveRows) {
+      const game = gameById.get(row.game_id);
+      if (!game || !row.classification) continue;
+      const isWhiteMove = row.ply % 2 === 1;
+      const moverIsPlayer = isWhiteMove === (game.player_color === 'white');
+      if (!moverIsPlayer) continue; // only count the connected player's own moves, not the opponent's
+
+      const maxPly = maxPlyByGame[row.game_id] || row.ply;
+      const endgameStart = maxPly - Math.max(10, Math.round(maxPly * 0.25));
+      let phase = 'middlegame';
+      if (row.ply <= 16) phase = 'opening';
+      else if (row.ply > endgameStart) phase = 'endgame';
+
+      const bucket = phaseBuckets[phase];
+      bucket.moves++;
+      // Cap each move's contribution to the ACPL average — an already-lost position that
+      // gets even more lost (e.g. walking into forced mate) shouldn't skew the average by
+      // thousands of centipawns for a single move, the same convention chess.com/Lichess use.
+      bucket.lossSum += Math.min(row.eval_loss || 0, 1000);
+      bucket[row.classification] = (bucket[row.classification] || 0) + 1;
+    }
+  }
+
+  const summarize = (b) => ({
+    moves: b.moves,
+    acpl: b.moves ? Math.round(b.lossSum / b.moves) : 0,
+    blunders: b.blunder,
+    mistakes: b.mistake,
+    inaccuracies: b.inaccuracy,
+  });
+
+  const overall = emptyBucket();
+  for (const key of Object.keys(phaseBuckets)) {
+    const b = phaseBuckets[key];
+    overall.moves += b.moves;
+    overall.lossSum += b.lossSum;
+    overall.blunder += b.blunder;
+    overall.mistake += b.mistake;
+    overall.inaccuracy += b.inaccuracy;
+  }
+
+  res.json({
+    gamesAnalyzed: games.length,
+    phases: {
+      opening: summarize(phaseBuckets.opening),
+      middlegame: summarize(phaseBuckets.middlegame),
+      endgame: summarize(phaseBuckets.endgame),
+    },
+    overall: summarize(overall),
+  });
+});
+
 router.get('/detail/:gameId', (req, res) => {
   const game = db.prepare('SELECT * FROM games WHERE id = ?').get(req.params.gameId);
   if (!game) return res.status(404).json({ error: 'Game not found' });
