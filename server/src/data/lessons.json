@@ -1,0 +1,132 @@
+[
+  {
+    "id": "tactics-pins-skewers",
+    "title": "Pins and Skewers",
+    "category": "tactics",
+    "level": "beginner",
+    "summary": "Learn to spot and exploit pins and skewers, two of the most common tactical motifs at every level.",
+    "themeTags": ["pin", "skewer"],
+    "content": [
+      "A pin restricts a piece from moving because doing so would expose a more valuable piece behind it.",
+      "A skewer is the reverse: the more valuable piece is in front and forced to move, exposing the piece behind it.",
+      "Look for enemy pieces lined up on the same rank, file, or diagonal as their king or queen."
+    ]
+  },
+  {
+    "id": "tactics-forks",
+    "title": "Forks: Attacking Two Pieces at Once",
+    "category": "tactics",
+    "level": "beginner",
+    "summary": "Knights, pawns, and queens can all fork multiple targets. Train your pattern recognition.",
+    "themeTags": ["fork"],
+    "content": [
+      "A fork is a single move that attacks two or more enemy pieces simultaneously.",
+      "Knight forks are especially dangerous because knights attack in an L-shape that's easy to miss.",
+      "Before every move, scan for undefended or equally-valuable enemy pieces a knight jump away."
+    ]
+  },
+  {
+    "id": "tactics-back-rank",
+    "title": "Back-Rank Weaknesses",
+    "category": "tactics",
+    "level": "intermediate",
+    "summary": "Understand how to create and defend against back-rank mate threats.",
+    "themeTags": ["back-rank", "checkmate-patterns"],
+    "content": [
+      "A king castled behind its own pawns with no escape square is vulnerable to back-rank mate.",
+      "Giving your king a 'luft' (escape square) is one of the simplest ways to avoid this.",
+      "When attacking, look for ways to remove defenders of the back rank or infiltrate with a rook/queen."
+    ]
+  },
+  {
+    "id": "openings-e4-principles",
+    "title": "Opening Principles After 1.e4",
+    "category": "openings",
+    "level": "beginner",
+    "summary": "Core opening principles: control the center, develop knights before bishops, castle early.",
+    "themeTags": ["opening-theory"],
+    "content": [
+      "Fight for the center with pawns and pieces in the first few moves.",
+      "Develop minor pieces (knights and bishops) before moving the same piece twice.",
+      "Castle early to get your king to safety and connect your rooks."
+    ]
+  },
+  {
+    "id": "openings-queens-gambit",
+    "title": "Understanding the Queen's Gambit",
+    "category": "openings",
+    "level": "intermediate",
+    "summary": "Learn the ideas behind 1.d4 d5 2.c4 and how to handle both accepted and declined lines.",
+    "themeTags": ["opening-theory", "queens-pawn"],
+    "content": [
+      "White offers the c-pawn to open lines and gain central control; Black is not obligated to accept.",
+      "In the Queen's Gambit Declined, Black supports d5 and aims for solid, classical development.",
+      "If Black accepts (QGA), White regains the pawn with active piece play rather than rushing to recapture immediately."
+    ]
+  },
+  {
+    "id": "endgame-king-pawn",
+    "title": "King and Pawn Endgames: Opposition",
+    "category": "endgames",
+    "level": "intermediate",
+    "summary": "Master the concept of opposition, the foundation of nearly all king-and-pawn endgames.",
+    "themeTags": ["king-and-pawn-endgame"],
+    "content": [
+      "Opposition means the kings face each other with one square between them, and it's the opponent's move.",
+      "Whoever is forced to move away from opposition typically loses ground in the endgame.",
+      "Practice the 'square rule' to quickly determine whether a king can catch a passed pawn."
+    ]
+  },
+  {
+    "id": "endgame-rook-endgames",
+    "title": "Essential Rook Endgame Techniques",
+    "category": "endgames",
+    "level": "advanced",
+    "summary": "Rook endgames are the most common endgame type. Learn the Lucena and Philidor positions.",
+    "themeTags": ["rook-endgame", "endgame-technique"],
+    "content": [
+      "The Lucena position is a winning technique for the side with an extra pawn and a rook, using the 'building a bridge' idea.",
+      "The Philidor position is a key drawing technique for the defending side.",
+      "Active rooks are almost always better than passive ones — activity often outweighs material in rook endgames."
+    ]
+  },
+  {
+    "id": "strategy-outposts",
+    "title": "Knight Outposts and Piece Activity",
+    "category": "strategy",
+    "level": "intermediate",
+    "summary": "Learn how to identify and use strong outpost squares for your pieces.",
+    "themeTags": ["outpost"],
+    "content": [
+      "An outpost is a square, usually in enemy territory, that cannot be attacked by enemy pawns.",
+      "Knights are especially strong on outposts since they can't be easily kicked away.",
+      "Trade off the opponent's pieces that could challenge your outpost, such as their fianchettoed bishop."
+    ]
+  },
+  {
+    "id": "strategy-pawn-structure",
+    "title": "Pawn Structure Fundamentals: Isolated and Passed Pawns",
+    "category": "strategy",
+    "level": "advanced",
+    "summary": "Recognize strong and weak pawn structures to guide your strategic plans.",
+    "themeTags": ["isolated-pawn", "pawn-break"],
+    "content": [
+      "An isolated pawn has no friendly pawns on adjacent files and can become a long-term weakness.",
+      "Passed pawns (no enemy pawns can stop them from promoting) grow more valuable as pieces are traded off.",
+      "Blockading an isolated or passed pawn with a piece, especially a knight, neutralizes its strength."
+    ]
+  },
+  {
+    "id": "mindset-time-management",
+    "title": "Time Management in Fast Time Controls",
+    "category": "mindset",
+    "level": "beginner",
+    "summary": "Practical tips for managing your clock in blitz and rapid games without blundering.",
+    "themeTags": ["time-management"],
+    "content": [
+      "Spend more time in critical, unclear positions and less time on forced or obvious moves.",
+      "Avoid moving instantly out of habit — even one extra second of checking for tactics prevents many blunders.",
+      "If you're low on time, prioritize keeping your king safe and simplifying to a position you understand."
+    ]
+  }
+]

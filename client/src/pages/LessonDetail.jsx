@@ -1,0 +1,45 @@
+import { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { api } from '../api.js';
+
+export default function LessonDetail() {
+  const { lessonId } = useParams();
+  const [lesson, setLesson] = useState(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    api.getLesson(lessonId).then(setLesson).catch((e) => setError(e.message));
+  }, [lessonId]);
+
+  if (error) return <div className="card">{error}</div>;
+  if (!lesson) return <p>Loading…</p>;
+
+  return (
+    <div>
+      <Link className="btn secondary" to="/lessons" style={{ marginBottom: 16, display: 'inline-block' }}>
+        ← Back to lessons
+      </Link>
+      <h1>{lesson.title}</h1>
+      <div className="badge-row">
+        <span className="tag">{lesson.category}</span>
+        <span className="tag">{lesson.level}</span>
+        {lesson.themeTags.map((t) => (
+          <span key={t} className="tag">{t}</span>
+        ))}
+      </div>
+      <div className="card" style={{ marginTop: 18 }}>
+        <p>{lesson.summary}</p>
+        <ul>
+          {lesson.content.map((point, i) => (
+            <li key={i} style={{ marginBottom: 10, lineHeight: 1.6 }}>{point}</li>
+          ))}
+        </ul>
+      </div>
+      <div className="card" style={{ marginTop: 18 }}>
+        <h3>Practice what you learned</h3>
+        <p>Head to the puzzle trainer and filter for related themes to reinforce this lesson.</p>
+        <Link className="btn" to="/puzzles">Go to puzzles</Link>
+      </div>
+    </div>
+  );
+}

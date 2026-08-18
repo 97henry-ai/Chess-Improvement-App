@@ -1,0 +1,17 @@
+{
+  "name": "chess-improvement-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personalized chess improvement app: analyze chess.com games, get custom puzzles from your own mistakes, and follow a lesson plan tailored to your weaknesses.",
+  "scripts": {
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client",
+    "dev": "concurrently -n SERVER,CLIENT -c blue,green \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build": "npm run build --prefix client",
+    "start": "npm run start --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
