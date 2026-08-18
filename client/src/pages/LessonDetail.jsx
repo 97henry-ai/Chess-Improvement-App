@@ -35,7 +35,7 @@ export default function LessonDetail() {
           ))}
         </ul>
         {lesson.source && (
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: 16, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-dim)', marginTop: 16, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
             Grounded in: {lesson.source}
           </p>
         )}

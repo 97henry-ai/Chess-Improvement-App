@@ -141,7 +141,7 @@ export default function Dashboard() {
                     </span>
                     <span style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                       <span className={`tag ${g.player_result}`}>{g.player_result}</span>
-                      <Link className="btn secondary" to={`/analyzer/${g.id}`} style={{ padding: '4px 10px', fontSize: '0.8rem' }}>
+                      <Link className="btn secondary" to={`/analyzer/${g.id}`} style={{ padding: '5px 12px', fontSize: '0.85rem' }}>
                         Analyze
                       </Link>
                     </span>

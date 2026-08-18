@@ -169,7 +169,7 @@ export default function Puzzles() {
                 ...interactionOptions,
               }}
             />
-            <p style={{ textAlign: 'center', marginTop: 8, fontSize: '0.8rem' }}>
+            <p style={{ textAlign: 'center', marginTop: 8, fontSize: '0.9rem' }}>
               Click or drag a piece to move · right-click drag to draw arrows
             </p>
           </div>

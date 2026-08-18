@@ -65,10 +65,10 @@ export default function Lessons() {
                 {BOOKS.map((b) => (
                   <li key={b.title} style={{ padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
                     <div style={{ fontWeight: 600 }}>{b.title}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)', margin: '2px 0 6px' }}>
+                    <div style={{ fontSize: '0.88rem', color: 'var(--text-dim)', margin: '3px 0 7px' }}>
                       {b.author} · {b.level}
                     </div>
-                    <div style={{ fontSize: '0.85rem' }}>{b.note}</div>
+                    <div style={{ fontSize: '0.95rem' }}>{b.note}</div>
                   </li>
                 ))}
               </ul>
@@ -81,7 +81,7 @@ export default function Lessons() {
                     <div style={{ fontWeight: 600 }}>
                       <a href={s.url} target="_blank" rel="noreferrer">{s.name}</a>
                     </div>
-                    <div style={{ fontSize: '0.85rem', marginTop: 4 }}>{s.note}</div>
+                    <div style={{ fontSize: '0.95rem', marginTop: 5 }}>{s.note}</div>
                   </li>
                 ))}
               </ul>
@@ -107,7 +107,7 @@ export default function Lessons() {
               <span className="tag">{lesson.level}</span>
             </div>
             {lesson.source && (
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: 8, marginBottom: 0 }}>{lesson.source}</p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginTop: 10, marginBottom: 0 }}>{lesson.source}</p>
             )}
           </Link>
         ))}

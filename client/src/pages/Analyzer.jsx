@@ -134,12 +134,12 @@ function explainMove(ply) {
 function ExplanationBlock({ ply, compact }) {
   const explanation = explainMove(ply);
   if (!explanation) return null;
-  const size = compact ? '0.8rem' : '0.85rem';
+  const size = compact ? '0.92rem' : '0.98rem';
   return (
-    <div style={{ fontSize: size, lineHeight: 1.5 }}>
-      <p style={{ margin: '0 0 6px' }}>{explanation.why}</p>
+    <div style={{ fontSize: size, lineHeight: 1.6 }}>
+      <p style={{ margin: '0 0 8px' }}>{explanation.why}</p>
       {explanation.better && (
-        <p style={{ margin: '0 0 6px' }}>
+        <p style={{ margin: '0 0 8px' }}>
           <strong>Better move:</strong> {explanation.better}
         </p>
       )}
@@ -400,7 +400,7 @@ export default function Analyzer() {
               <div className="eval-bar-fill" style={{ height: `${evalBarHeight(currentPly?.evalAfter !== undefined ? { cp: currentPly.evalAfter } : null)}%` }} />
             </div>
             {currentPly?.evalAfter !== undefined && (
-              <div style={{ textAlign: 'center', marginTop: 6, fontSize: '0.75rem', color: 'var(--text-dim)' }}>
+              <div style={{ textAlign: 'center', marginTop: 6, fontSize: '0.85rem', color: 'var(--text-dim)' }}>
                 {evalLabel({ cp: currentPly.evalAfter })}
               </div>
             )}
@@ -422,14 +422,14 @@ export default function Analyzer() {
               <button className="btn secondary" onClick={() => setCursor(plies.length)} disabled={cursor >= plies.length}>⏭</button>
             </div>
             {isExploring ? (
-              <p style={{ textAlign: 'center', marginTop: 8, fontSize: '0.8rem' }}>
+              <p style={{ textAlign: 'center', marginTop: 8, fontSize: '0.9rem' }}>
                 Exploring a variation — not part of the game.{' '}
-                <button className="btn secondary" style={{ padding: '2px 10px', fontSize: '0.75rem' }} onClick={resetToGamePosition}>
+                <button className="btn secondary" style={{ padding: '3px 12px', fontSize: '0.85rem' }} onClick={resetToGamePosition}>
                   Reset to game
                 </button>
               </p>
             ) : (
-              <p style={{ textAlign: 'center', marginTop: 8, fontSize: '0.8rem' }}>
+              <p style={{ textAlign: 'center', marginTop: 8, fontSize: '0.9rem' }}>
                 Drag or click pieces to explore variations from here
               </p>
             )}
@@ -453,7 +453,7 @@ export default function Analyzer() {
                   )}
                 </p>
                 {currentPly.classification === 'best' || currentPly.classification === 'good' ? (
-                  <p style={{ fontSize: '0.85rem' }} className="classification-best">
+                  <p style={{ fontSize: '0.95rem' }} className="classification-best">
                     {currentPly.classification === 'best' ? 'This was the engine\'s top choice.' : 'A strong move — close to the engine\'s top choice.'}
                   </p>
                 ) : (
@@ -495,7 +495,7 @@ export default function Analyzer() {
                     </span>
                     <button
                       className="btn secondary"
-                      style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                      style={{ padding: '5px 12px', fontSize: '0.85rem' }}
                       disabled={!!savedPuzzleIds[p.ply]}
                       onClick={(e) => { e.stopPropagation(); saveAsPuzzle(p); }}
                     >
