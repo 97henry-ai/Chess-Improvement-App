@@ -3,6 +3,14 @@ import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { useUser } from '../UserContext.jsx';
 import { api } from '../api.js';
+import { useChessInteraction } from '../engine/useChessInteraction.js';
+import { playMoveSound } from '../engine/sound.js';
+
+const EMPTY_CHESS = new Chess();
+
+function normalizeSan(san) {
+  return san?.replace('+', '').replace('#', '');
+}
 
 export default function Puzzles() {
   const { username } = useUser();
@@ -27,14 +35,22 @@ export default function Puzzles() {
   const queue = source === 'mine' ? customPuzzles : curatedPuzzles;
   const puzzle = queue[index];
 
+  const { options: interactionOptions, reset, setLastMove } = useChessInteraction({
+    chess: chess || EMPTY_CHESS,
+    disabled: !chess || !puzzle || status !== 'playing',
+    onMoveMade: handleMoveMade,
+  });
+
   useEffect(() => {
     if (puzzle) {
       setChess(new Chess(puzzle.fen));
       setStep(0);
       setStatus('playing');
+      reset();
     } else {
       setChess(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [puzzle?.id]);
 
   const boardOrientation = useMemo(() => {
@@ -52,40 +68,36 @@ export default function Puzzles() {
     }
   }
 
-  function onPieceDrop({ sourceSquare, targetSquare }) {
-    if (!chess || !puzzle || status !== 'playing' || !targetSquare) return false;
-
-    let move;
-    try {
-      move = chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q' });
-    } catch {
-      return false;
-    }
-    if (!move) return false;
-
-    const expected = puzzle.solution_san[step];
-    if (move.san !== expected && move.san.replace('+', '').replace('#', '') !== expected?.replace('+', '').replace('#', '')) {
+  function handleMoveMade(move) {
+    if (!puzzle) return;
+    const expected = normalizeSan(puzzle.solution_san[step]);
+    if (normalizeSan(move.san) !== expected) {
       chess.undo();
       setStatus('wrong');
+      playMoveSound('wrong');
       recordAttempt(false);
-      return false;
+      return;
     }
 
     const nextStep = step + 1;
     if (nextStep >= puzzle.solution_san.length) {
       setStatus('correct');
+      playMoveSound('success');
       recordAttempt(true);
       setStep(nextStep);
-      return true;
+      return;
     }
 
     // Auto-play the opponent's reply move in the solution line, then wait for the next user move.
     const replySan = puzzle.solution_san[nextStep];
     setTimeout(() => {
       try {
-        chess.move(replySan);
+        const replyMove = chess.move(replySan);
+        if (replyMove) {
+          setLastMove({ from: replyMove.from, to: replyMove.to });
+          playMoveSound(chess.isCheck() ? 'check' : replyMove.captured ? 'capture' : 'move');
+        }
         setStep(nextStep + 1);
-        setChess(new Chess(chess.fen()));
         if (nextStep + 1 >= puzzle.solution_san.length) {
           setStatus('correct');
           recordAttempt(true);
@@ -94,8 +106,6 @@ export default function Puzzles() {
         /* ignore malformed curated data */
       }
     }, 400);
-
-    return true;
   }
 
   function nextPuzzle() {
@@ -138,9 +148,13 @@ export default function Puzzles() {
               options={{
                 position: chess.fen(),
                 boardOrientation,
-                onPieceDrop,
+                allowDrawingArrows: true,
+                ...interactionOptions,
               }}
             />
+            <p style={{ textAlign: 'center', marginTop: 8, fontSize: '0.8rem' }}>
+              Click or drag a piece to move · right-click drag to draw arrows
+            </p>
           </div>
           <div className="card">
             <h3>{puzzle.theme?.replace(/-/g, ' ') || 'Tactic'}</h3>

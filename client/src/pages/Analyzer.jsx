@@ -6,6 +6,9 @@ import { useUser } from '../UserContext.jsx';
 import { api } from '../api.js';
 import { analyzeFen } from '../engine/stockfishClient.js';
 import { evalToCp, classifyMove } from '../engine/classify.js';
+import { useChessInteraction } from '../engine/useChessInteraction.js';
+
+const EMPTY_CHESS = new Chess();
 
 function buildPlies(pgn) {
   const chess = new Chess();
@@ -21,7 +24,7 @@ function buildPlies(pgn) {
     const fenBefore = replay.fen();
     replay.move(move.san);
     const fenAfter = replay.fen();
-    plies.push({ ply: i + 1, san: move.san, color: move.color, fenBefore, fenAfter });
+    plies.push({ ply: i + 1, san: move.san, from: move.from, to: move.to, color: move.color, fenBefore, fenAfter });
   });
   return plies;
 }
@@ -102,6 +105,38 @@ export default function Analyzer() {
 
   const currentFen = plies.length ? (cursor === 0 ? plies[0].fenBefore : plies[cursor - 1].fenAfter) : 'start';
   const currentPly = plies[cursor];
+
+  const [explorationChess, setExplorationChess] = useState(null);
+  const { options: interactionOptions, reset: resetInteraction, setLastMove } = useChessInteraction({
+    chess: explorationChess || EMPTY_CHESS,
+    disabled: !explorationChess,
+  });
+
+  useEffect(() => {
+    if (currentFen === 'start') {
+      setExplorationChess(null);
+      return;
+    }
+    setExplorationChess(new Chess(currentFen));
+    resetInteraction();
+    const viewedMove = cursor > 0 ? plies[cursor - 1] : null;
+    if (viewedMove?.from && viewedMove?.to) {
+      setLastMove({ from: viewedMove.from, to: viewedMove.to });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentFen]);
+
+  const isExploring = explorationChess && explorationChess.fen().split(' ')[0] !== currentFen.split(' ')[0];
+
+  function resetToGamePosition() {
+    if (currentFen === 'start') return;
+    setExplorationChess(new Chess(currentFen));
+    resetInteraction();
+    const viewedMove = cursor > 0 ? plies[cursor - 1] : null;
+    if (viewedMove?.from && viewedMove?.to) {
+      setLastMove({ from: viewedMove.from, to: viewedMove.to });
+    }
+  }
 
   async function runFullAnalysis() {
     if (!plies.length) return;
@@ -197,17 +232,25 @@ export default function Analyzer() {
       {!game ? (
         <p>Loading game…</p>
       ) : (
-        <div className="grid" style={{ gridTemplateColumns: '32px minmax(0,460px) 1fr', gap: 20, alignItems: 'start' }}>
-          <div className="eval-bar-wrap" style={{ height: 460 }}>
-            <div className="eval-bar-fill" style={{ height: `${evalBarHeight(currentPly?.evalAfter !== undefined ? { cp: currentPly.evalAfter } : null)}%` }} />
+        <div className="grid" style={{ gridTemplateColumns: '52px minmax(0,460px) 1fr', gap: 20, alignItems: 'start' }}>
+          <div>
+            <div className="eval-bar-wrap" style={{ height: 460 }}>
+              <div className="eval-bar-fill" style={{ height: `${evalBarHeight(currentPly?.evalAfter !== undefined ? { cp: currentPly.evalAfter } : null)}%` }} />
+            </div>
+            {currentPly?.evalAfter !== undefined && (
+              <div style={{ textAlign: 'center', marginTop: 6, fontSize: '0.75rem', color: 'var(--text-dim)' }}>
+                {evalLabel({ cp: currentPly.evalAfter })}
+              </div>
+            )}
           </div>
 
           <div>
             <Chessboard
               options={{
-                position: currentFen === 'start' ? undefined : currentFen,
+                position: explorationChess ? explorationChess.fen() : currentFen === 'start' ? undefined : currentFen,
                 boardOrientation: game.player_color === 'black' ? 'black' : 'white',
-                allowDragging: false,
+                allowDrawingArrows: true,
+                ...interactionOptions,
               }}
             />
             <div style={{ display: 'flex', gap: 8, marginTop: 12, justifyContent: 'center' }}>
@@ -216,6 +259,18 @@ export default function Analyzer() {
               <button className="btn secondary" onClick={() => setCursor((c) => Math.min(plies.length, c + 1))} disabled={cursor >= plies.length}>▶</button>
               <button className="btn secondary" onClick={() => setCursor(plies.length)} disabled={cursor >= plies.length}>⏭</button>
             </div>
+            {isExploring ? (
+              <p style={{ textAlign: 'center', marginTop: 8, fontSize: '0.8rem' }}>
+                Exploring a variation — not part of the game.{' '}
+                <button className="btn secondary" style={{ padding: '2px 10px', fontSize: '0.75rem' }} onClick={resetToGamePosition}>
+                  Reset to game
+                </button>
+              </p>
+            ) : (
+              <p style={{ textAlign: 'center', marginTop: 8, fontSize: '0.8rem' }}>
+                Drag or click pieces to explore variations from here
+              </p>
+            )}
           </div>
 
           <div className="card">
