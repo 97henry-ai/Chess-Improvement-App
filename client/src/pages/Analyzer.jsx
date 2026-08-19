@@ -7,6 +7,7 @@ import { api } from '../api.js';
 import { analyzeFen } from '../engine/stockfishClient.js';
 import { evalToCp, classifyMove } from '../engine/classify.js';
 import { useChessInteraction } from '../engine/useChessInteraction.js';
+import CoachAvatar from '../components/CoachAvatar.jsx';
 
 const EMPTY_CHESS = new Chess();
 
@@ -136,18 +137,67 @@ function ExplanationBlock({ ply, compact }) {
   if (!explanation) return null;
   const size = compact ? '0.92rem' : '0.98rem';
   return (
-    <div style={{ fontSize: size, lineHeight: 1.6 }}>
-      <p style={{ margin: '0 0 8px' }}>{explanation.why}</p>
-      {explanation.better && (
-        <p style={{ margin: '0 0 8px' }}>
-          <strong>Better move:</strong> {explanation.better}
+    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+      <CoachAvatar size={compact ? 26 : 32} />
+      <div style={{ fontSize: size, lineHeight: 1.6, fontStyle: 'italic' }}>
+        <p style={{ margin: '0 0 8px' }}>&ldquo;{explanation.why}&rdquo;</p>
+        {explanation.better && (
+          <p style={{ margin: '0 0 8px' }}>
+            &ldquo;<strong>Better:</strong> {explanation.better}&rdquo;
+          </p>
+        )}
+        <p style={{ margin: 0, color: 'var(--text-dim)' }}>
+          &ldquo;<strong style={{ color: 'var(--text)' }}>How to avoid this:</strong> {explanation.tip}&rdquo;
         </p>
-      )}
-      <p style={{ margin: 0, color: 'var(--text-dim)' }}>
-        <strong style={{ color: 'var(--text)' }}>How to avoid this:</strong> {explanation.tip}
-      </p>
+      </div>
     </div>
   );
+}
+
+/**
+ * Summarize the whole game from the connected player's side only: how many
+ * best/good/inaccurate/mistaken/blundered moves they made, an approximate
+ * accuracy %, and a coach-style quote calling out the single costliest moment.
+ */
+function buildGameSummary(plies, playerColor) {
+  const moverColor = playerColor === 'black' ? 'b' : 'w';
+  const own = plies.filter((p) => p.color === moverColor && p.classification);
+  if (own.length === 0) return null;
+
+  const counts = { best: 0, good: 0, inaccuracy: 0, mistake: 0, blunder: 0 };
+  let lossSum = 0;
+  let worst = null;
+  for (const p of own) {
+    counts[p.classification] = (counts[p.classification] || 0) + 1;
+    lossSum += Math.min(p.evalLoss || 0, 1000);
+    if (!worst || (p.evalLoss || 0) > (worst.evalLoss || 0)) worst = p;
+  }
+  const acpl = Math.round(lossSum / own.length);
+  const goodMovePct = Math.round(((counts.best + counts.good) / own.length) * 100);
+
+  let verdict;
+  if (acpl <= 25) verdict = 'a very clean, precise game';
+  else if (acpl <= 50) verdict = 'a solid game with only small slips';
+  else if (acpl <= 90) verdict = 'a game with a few costly moments';
+  else verdict = 'a game with some big swings — good material to learn from';
+
+  let quote = `That was ${verdict}. `;
+  if (counts.blunder > 0) {
+    quote += `You had ${counts.blunder} blunder${counts.blunder === 1 ? '' : 's'}`;
+    if (counts.mistake > 0) quote += ` and ${counts.mistake} mistake${counts.mistake === 1 ? '' : 's'}`;
+    quote += '. ';
+  } else if (counts.mistake > 0) {
+    quote += `You had ${counts.mistake} mistake${counts.mistake === 1 ? '' : 's'}, nothing too serious. `;
+  } else {
+    quote += 'Nice and steady from you. ';
+  }
+  if (worst && (worst.evalLoss || 0) >= 100) {
+    quote += `The critical moment was ${worst.san} on move ${Math.ceil(worst.ply / 2)} — look at that one first.`;
+  } else {
+    quote += 'Keep building on this.';
+  }
+
+  return { counts, acpl, goodMovePct, worst, quote };
 }
 
 function evalLabel(evaluation) {
@@ -336,6 +386,14 @@ export default function Analyzer() {
   }
 
   const blunders = useMemo(() => plies.filter((p) => p.classification === 'blunder' || p.classification === 'mistake'), [plies]);
+  const gameSummary = useMemo(() => (game ? buildGameSummary(plies, game.player_color) : null), [plies, game]);
+  const movePairs = useMemo(() => {
+    const pairs = [];
+    for (let i = 0; i < plies.length; i += 2) {
+      pairs.push({ num: Math.ceil((i + 1) / 2), white: plies[i], black: plies[i + 1] });
+    }
+    return pairs;
+  }, [plies]);
 
   if (!gameId) {
     return (
@@ -393,6 +451,47 @@ export default function Analyzer() {
               {game.end_time && <span className="tag">{new Date(game.end_time * 1000).toLocaleDateString()}</span>}
             </div>
           </div>
+
+          {gameSummary && (
+            <div className="card" style={{ marginBottom: 20 }}>
+              <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                <CoachAvatar size={64} />
+                <div style={{ flex: 1, minWidth: 240 }}>
+                  <h3 style={{ marginBottom: 8 }}>Coach's summary</h3>
+                  <blockquote
+                    style={{
+                      margin: 0,
+                      fontStyle: 'italic',
+                      fontSize: '1.02rem',
+                      lineHeight: 1.6,
+                      borderLeft: '3px solid var(--accent)',
+                      paddingLeft: 14,
+                    }}
+                  >
+                    &ldquo;{gameSummary.quote}&rdquo;
+                  </blockquote>
+                </div>
+              </div>
+              <div className="grid grid-4" style={{ marginTop: 18 }}>
+                <div className="stat-tile">
+                  <div className="value">{gameSummary.goodMovePct}%</div>
+                  <div className="label">Best/good moves</div>
+                </div>
+                <div className="stat-tile">
+                  <div className="value">{gameSummary.acpl}</div>
+                  <div className="label">Avg. centipawn loss</div>
+                </div>
+                <div className="stat-tile">
+                  <div className="value classification-mistake">{gameSummary.counts.mistake}</div>
+                  <div className="label">Mistakes</div>
+                </div>
+                <div className="stat-tile">
+                  <div className="value classification-blunder">{gameSummary.counts.blunder}</div>
+                  <div className="label">Blunders</div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="grid" style={{ gridTemplateColumns: '52px minmax(0,460px) 1fr', gap: 20, alignItems: 'start' }}>
           <div>
@@ -464,16 +563,43 @@ export default function Analyzer() {
 
             <h3 style={{ marginTop: 18 }}>Move list</h3>
             <ul className="list-plain" style={{ maxHeight: 220, overflowY: 'auto' }}>
-              {plies.map((p, i) => (
-                <li
-                  key={p.ply}
-                  className={`move-row ${cursor === i + 1 ? 'active' : ''}`}
-                  onClick={() => setCursor(i + 1)}
-                >
-                  <span>
-                    {p.color === 'w' ? `${Math.ceil(p.ply / 2)}.` : ''} {p.san}
-                  </span>
-                  {p.classification && <span className={`classification-${p.classification}`}>{p.classification}</span>}
+              {movePairs.map((pair) => (
+                <li key={pair.num} className="move-row" style={{ gap: 10 }}>
+                  <span style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', minWidth: 26 }}>{pair.num}.</span>
+                  <button
+                    onClick={() => setCursor(pair.white.ply)}
+                    className={pair.white.classification ? `classification-${pair.white.classification}` : ''}
+                    style={{
+                      background: cursor === pair.white.ply ? 'var(--bg-elevated)' : 'transparent',
+                      border: cursor === pair.white.ply ? '1px solid var(--accent)' : '1px solid transparent',
+                      borderRadius: 6,
+                      padding: '2px 8px',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '0.95rem',
+                      cursor: 'pointer',
+                      color: pair.white.classification ? undefined : 'var(--text)',
+                    }}
+                  >
+                    {pair.white.san}
+                  </button>
+                  {pair.black && (
+                    <button
+                      onClick={() => setCursor(pair.black.ply)}
+                      className={pair.black.classification ? `classification-${pair.black.classification}` : ''}
+                      style={{
+                        background: cursor === pair.black.ply ? 'var(--bg-elevated)' : 'transparent',
+                        border: cursor === pair.black.ply ? '1px solid var(--accent)' : '1px solid transparent',
+                        borderRadius: 6,
+                        padding: '2px 8px',
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.95rem',
+                        cursor: 'pointer',
+                        color: pair.black.classification ? undefined : 'var(--text)',
+                      }}
+                    >
+                      {pair.black.san}
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
