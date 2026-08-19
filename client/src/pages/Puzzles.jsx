@@ -13,40 +13,91 @@ function normalizeSan(san) {
   return san?.replace('+', '').replace('#', '');
 }
 
+function puzzleRef(puzzle) {
+  return `${puzzle.source}:${puzzle.id}`;
+}
+
+function dailyProgressKey(username, date) {
+  return `dailyPuzzleProgress:${username}:${date}`;
+}
+
+function loadDailyProgress(username, date) {
+  try {
+    const raw = localStorage.getItem(dailyProgressKey(username, date));
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function saveDailyProgress(username, date, solvedSet) {
+  try {
+    localStorage.setItem(dailyProgressKey(username, date), JSON.stringify([...solvedSet]));
+  } catch {
+    /* localStorage unavailable — progress just won't persist across reloads */
+  }
+}
+
 export default function Puzzles() {
   const { username } = useUser();
-  const [source, setSource] = useState('mine'); // 'mine' | 'curated'
+  const [source, setSource] = useState('daily'); // 'daily' | 'mine' | 'curated'
   const [customPuzzles, setCustomPuzzles] = useState([]);
   const [curatedPuzzles, setCuratedPuzzles] = useState([]);
+  const [dailyPuzzles, setDailyPuzzles] = useState([]);
+  const [dailyDate, setDailyDate] = useState(null);
+  const [dailySolved, setDailySolved] = useState(new Set());
   const [index, setIndex] = useState(0);
   const [chess, setChess] = useState(null);
   const [step, setStep] = useState(0);
   const [status, setStatus] = useState('playing'); // 'playing' | 'correct' | 'wrong'
   const [stats, setStats] = useState(null);
   const [chessComRating, setChessComRating] = useState(null);
+  const [ratingLoaded, setRatingLoaded] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (username) {
+      setRatingLoaded(false);
       api.getCustomPuzzles(username).then(setCustomPuzzles).catch((e) => setError(e.message));
       api.getPuzzleStats(username).then(setStats).catch(() => {});
       api
         .getStats(username)
         .then((s) => setChessComRating(highestRating(s)))
-        .catch(() => setChessComRating(null));
+        .catch(() => setChessComRating(null))
+        .finally(() => setRatingLoaded(true));
     } else {
       setChessComRating(null);
+      setRatingLoaded(true);
     }
   }, [username]);
 
+  // Wait until we know the player's rating (or that none is available) before
+  // requesting the curated/daily sets, since the daily plan is generated once
+  // per day server-side — fetching too early would lock in an uncalibrated plan.
   useEffect(() => {
+    if (!ratingLoaded) return;
     api
       .getCuratedPuzzles(chessComRating ? { near: chessComRating } : {})
       .then(setCuratedPuzzles)
       .catch((e) => setError(e.message));
-  }, [chessComRating]);
 
-  const queue = source === 'mine' ? customPuzzles : curatedPuzzles;
+    if (username) {
+      api
+        .getDailyPuzzles(username, chessComRating || undefined)
+        .then((d) => {
+          setDailyPuzzles(d.puzzles);
+          setDailyDate(d.date);
+          setDailySolved(loadDailyProgress(username, d.date));
+        })
+        .catch((e) => setError(e.message));
+    } else {
+      setDailyPuzzles([]);
+      setDailyDate(null);
+      setDailySolved(new Set());
+    }
+  }, [ratingLoaded, chessComRating, username]);
+
+  const queue = source === 'mine' ? customPuzzles : source === 'daily' ? dailyPuzzles : curatedPuzzles;
   const puzzle = queue[index];
 
   const { options: interactionOptions, reset, setLastMove } = useChessInteraction({
@@ -56,16 +107,20 @@ export default function Puzzles() {
   });
 
   useEffect(() => {
+    setIndex(0);
+  }, [source]);
+
+  useEffect(() => {
     if (puzzle) {
       setChess(new Chess(puzzle.fen));
       setStep(0);
-      setStatus('playing');
+      setStatus(source === 'daily' && dailySolved.has(puzzleRef(puzzle)) ? 'correct' : 'playing');
       reset();
     } else {
       setChess(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [puzzle?.id]);
+  }, [puzzle?.id, puzzle?.source]);
 
   const boardOrientation = useMemo(() => {
     if (!puzzle) return 'white';
@@ -80,6 +135,16 @@ export default function Puzzles() {
     } catch {
       /* non-critical */
     }
+  }
+
+  function markSolvedIfDaily() {
+    if (source !== 'daily' || !puzzle || !username || !dailyDate) return;
+    setDailySolved((prev) => {
+      const next = new Set(prev);
+      next.add(puzzleRef(puzzle));
+      saveDailyProgress(username, dailyDate, next);
+      return next;
+    });
   }
 
   function handleMoveMade(move) {
@@ -98,6 +163,7 @@ export default function Puzzles() {
       setStatus('correct');
       playMoveSound('success');
       recordAttempt(true);
+      markSolvedIfDaily();
       setStep(nextStep);
       return;
     }
@@ -115,6 +181,7 @@ export default function Puzzles() {
         if (nextStep + 1 >= puzzle.solution_san.length) {
           setStatus('correct');
           recordAttempt(true);
+          markSolvedIfDaily();
         }
       } catch {
         /* ignore malformed curated data */
@@ -126,16 +193,22 @@ export default function Puzzles() {
     setIndex((i) => (i + 1 < queue.length ? i + 1 : 0));
   }
 
+  const dailySolvedCount = dailyPuzzles.filter((p) => dailySolved.has(puzzleRef(p))).length;
+  const dailyComplete = dailyPuzzles.length > 0 && dailySolvedCount === dailyPuzzles.length;
+
   return (
     <div>
       <h1>Puzzle Trainer</h1>
-      <p>Solve tactics pulled straight from your own blunders, or train with our curated puzzle set.</p>
+      <p>A fresh personalized set of 10 every day, plus your own blunders and our full curated tactics set.</p>
 
       <div className="badge-row" style={{ marginBottom: 18 }}>
-        <button className={`btn ${source === 'mine' ? '' : 'secondary'}`} onClick={() => { setSource('mine'); setIndex(0); }}>
+        <button className={`btn ${source === 'daily' ? '' : 'secondary'}`} onClick={() => setSource('daily')}>
+          Today's 10 {dailyPuzzles.length > 0 ? `(${dailySolvedCount}/${dailyPuzzles.length})` : ''}
+        </button>
+        <button className={`btn ${source === 'mine' ? '' : 'secondary'}`} onClick={() => setSource('mine')}>
           My blunders ({customPuzzles.length})
         </button>
-        <button className={`btn ${source === 'curated' ? '' : 'secondary'}`} onClick={() => { setSource('curated'); setIndex(0); }}>
+        <button className={`btn ${source === 'curated' ? '' : 'secondary'}`} onClick={() => setSource('curated')}>
           Curated tactics ({curatedPuzzles.length})
         </button>
         {source === 'curated' && chessComRating && (
@@ -148,9 +221,47 @@ export default function Puzzles() {
         )}
       </div>
 
+      {source === 'daily' && dailyPuzzles.length > 0 && (
+        <div className="badge-row" style={{ marginBottom: 18 }}>
+          {dailyPuzzles.map((p, i) => {
+            const solved = dailySolved.has(puzzleRef(p));
+            return (
+              <button
+                key={puzzleRef(p)}
+                onClick={() => setIndex(i)}
+                className="tag"
+                style={{
+                  cursor: 'pointer',
+                  minWidth: 30,
+                  textAlign: 'center',
+                  fontWeight: 700,
+                  color: solved ? 'var(--accent)' : i === index ? 'var(--text)' : 'var(--text-dim)',
+                  borderColor: solved ? 'var(--accent)' : i === index ? 'var(--text)' : 'var(--border)',
+                }}
+              >
+                {solved ? '✓' : i + 1}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {error && <div className="card" style={{ borderColor: 'var(--danger)', marginBottom: 16 }}>{error}</div>}
 
-      {!puzzle && (
+      {source === 'daily' && !username && (
+        <div className="empty-state card">Connect your chess.com account on the Dashboard to get a personalized daily plan.</div>
+      )}
+
+      {source === 'daily' && username && dailyComplete && (
+        <div className="card" style={{ marginBottom: 18, borderColor: 'var(--accent)' }}>
+          <p style={{ margin: 0 }}>
+            <strong className="classification-best">Daily 10 complete!</strong> Nice work — come back tomorrow for a fresh set.
+            You can still replay any of today's puzzles below.
+          </p>
+        </div>
+      )}
+
+      {!puzzle && source !== 'daily' && (
         <div className="empty-state card">
           {source === 'mine'
             ? 'No custom puzzles yet — analyze a game and save a blunder to get started.'

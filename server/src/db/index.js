@@ -85,6 +85,15 @@ CREATE TABLE IF NOT EXISTS weakness_profile (
   data TEXT NOT NULL,
   updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS daily_plans (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT NOT NULL,
+  plan_date TEXT NOT NULL,
+  puzzle_refs TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(username, plan_date)
+);
 `);
 
 export default db;
