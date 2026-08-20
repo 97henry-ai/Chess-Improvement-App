@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useUser } from './UserContext.jsx';
+import ThemeToggle from './components/ThemeToggle.jsx';
 
 export default function Layout() {
   const { username } = useUser();
@@ -17,6 +18,7 @@ export default function Layout() {
           <NavLink to="/puzzles">Puzzles</NavLink>
           <NavLink to="/lessons">Lessons</NavLink>
         </nav>
+        <ThemeToggle />
         <div className="user-pill">{username ? `@${username}` : 'No account linked'}</div>
       </header>
       <main className="content">
