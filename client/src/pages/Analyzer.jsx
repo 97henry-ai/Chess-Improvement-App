@@ -304,7 +304,14 @@ export default function Analyzer() {
   }, [gameId]);
 
   const currentFen = plies.length ? (cursor === 0 ? plies[0].fenBefore : plies[cursor - 1].fenAfter) : 'start';
-  const currentPly = plies[cursor];
+  // The board shows the position AFTER `cursor` moves have been played, so the
+  // analysis panel must describe the move that got us there (plies[cursor - 1]),
+  // not the upcoming one (plies[cursor]) — otherwise the text/eval describes a
+  // move that hasn't happened on the board yet.
+  const currentPly = cursor > 0 ? plies[cursor - 1] : null;
+  // Eval that matches whatever position is currently on the board: the eval
+  // after the last-played move, or the starting position's eval at cursor 0.
+  const displayEvalCp = currentPly ? currentPly.evalAfter : plies[0]?.evalBefore;
 
   const [explorationChess, setExplorationChess] = useState(null);
   const { options: interactionOptions, reset: resetInteraction, setLastMove } = useChessInteraction({
@@ -588,11 +595,11 @@ export default function Analyzer() {
           <div className="grid" style={{ gridTemplateColumns: '52px minmax(0,460px) 1fr', gap: 20, alignItems: 'start' }}>
           <div>
             <div className="eval-bar-wrap" style={{ height: 460 }}>
-              <div className="eval-bar-fill" style={{ height: `${evalBarHeight(currentPly?.evalAfter !== undefined ? { cp: currentPly.evalAfter } : null)}%` }} />
+              <div className="eval-bar-fill" style={{ height: `${evalBarHeight(displayEvalCp !== undefined ? { cp: displayEvalCp } : null)}%` }} />
             </div>
-            {currentPly?.evalAfter !== undefined && (
+            {displayEvalCp !== undefined && (
               <div style={{ textAlign: 'center', marginTop: 6, fontSize: '0.85rem', color: 'var(--text-dim)' }}>
-                {evalLabel({ cp: currentPly.evalAfter })}
+                {evalLabel({ cp: displayEvalCp })}
               </div>
             )}
           </div>
