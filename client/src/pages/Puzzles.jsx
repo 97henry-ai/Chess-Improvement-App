@@ -229,8 +229,15 @@ export default function Puzzles() {
     runExplanation(chess.fen(), puzzle.solution_san[step], null);
   }
 
+  // For puzzles built from your own games, always orient the board to the side
+  // you actually played — that's recorded on the puzzle's theme ("blunder-white"/
+  // "blunder-black") independent of whose move a shared/legacy FEN happens to start on.
+  // Curated/daily tactics have no "your side" — those show whichever color is to move.
   const boardOrientation = useMemo(() => {
     if (!puzzle) return 'white';
+    if (puzzle.source === 'custom' && puzzle.theme?.startsWith('blunder-')) {
+      return puzzle.theme === 'blunder-black' ? 'black' : 'white';
+    }
     return puzzle.fen.split(' ')[1] === 'w' ? 'white' : 'black';
   }, [puzzle]);
 
