@@ -8,6 +8,7 @@ import { analyzeFen } from '../engine/stockfishClient.js';
 import { evalToCp, classifyMove } from '../engine/classify.js';
 import { useChessInteraction } from '../engine/useChessInteraction.js';
 import CoachAvatar from '../components/CoachAvatar.jsx';
+import { acplLevel } from '../accuracyLabel.js';
 
 const EMPTY_CHESS = new Chess();
 
@@ -132,6 +133,45 @@ function explainMove(ply) {
   return { why, better, tip };
 }
 
+/** A short, human reason a candidate move is good, based on what it actually does. */
+function describeWhyGood(san) {
+  const clean = san.replace('+', '').replace('#', '');
+  if (san.includes('#')) return 'forces checkmate';
+  if (san.includes('x')) return 'wins material';
+  if (san.includes('+')) return 'gives a strong check';
+  if (/^O-O/.test(clean)) return 'gets the king to safety';
+  return 'keeps the position solid and active';
+}
+
+function formatMoverEval(evalCp, moverColor) {
+  const cp = moverColor === 'w' ? evalCp : -evalCp;
+  const pawns = (cp / 100).toFixed(1);
+  return cp >= 0 ? `+${pawns}` : pawns;
+}
+
+function OtherGoodMoves({ ply }) {
+  const played = ply.san;
+  const options = (ply.alternatives || []).filter((a) => a.san && a.san !== played).slice(0, 3);
+  if (options.length === 0) return null;
+  return (
+    <div style={{ marginTop: 4 }}>
+      <p className="text-small" style={{ margin: '0 0 4px', fontWeight: 700, color: 'var(--text)' }}>
+        A few strong options here:
+      </p>
+      <ul className="list-plain" style={{ gap: 2 }}>
+        {options.map((alt, i) => (
+          <li key={alt.san} style={{ padding: '2px 0', fontFamily: 'var(--font-mono)', fontSize: '0.88rem' }}>
+            <strong className={i === 0 ? 'classification-best' : ''}>{alt.san}</strong>{' '}
+            <span style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-sans)' }}>
+              ({formatMoverEval(alt.evalCp, ply.color)}) — {describeWhyGood(alt.san)}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function ExplanationBlock({ ply, compact }) {
   const explanation = explainMove(ply);
   if (!explanation) return null;
@@ -149,6 +189,9 @@ function ExplanationBlock({ ply, compact }) {
         <p style={{ margin: 0, color: 'var(--text-dim)' }}>
           &ldquo;<strong style={{ color: 'var(--text)' }}>How to avoid this:</strong> {explanation.tip}&rdquo;
         </p>
+        <div style={{ fontStyle: 'normal' }}>
+          <OtherGoodMoves ply={ply} />
+        </div>
       </div>
     </div>
   );
@@ -225,6 +268,7 @@ export default function Analyzer() {
   const [progress, setProgress] = useState(0);
   const [savedPuzzleIds, setSavedPuzzleIds] = useState({});
   const [error, setError] = useState('');
+  const [mistakeIndex, setMistakeIndex] = useState(0);
 
   useEffect(() => {
     if (username && !gameId) {
@@ -386,7 +430,15 @@ export default function Analyzer() {
   }
 
   const blunders = useMemo(() => plies.filter((p) => p.classification === 'blunder' || p.classification === 'mistake'), [plies]);
+  useEffect(() => {
+    setMistakeIndex(0);
+  }, [blunders.length, gameId]);
+  const currentMistake = blunders[mistakeIndex];
   const gameSummary = useMemo(() => (game ? buildGameSummary(plies, game.player_color) : null), [plies, game]);
+  const consistency = gameSummary ? acplLevel(gameSummary.acpl) : null;
+  const consistencyClass = consistency
+    ? consistency.tone === 'win' ? 'best' : consistency.tone === 'loss' ? 'blunder' : consistency.tone === 'draw' ? 'mistake' : 'good'
+    : 'good';
   const movePairs = useMemo(() => {
     const pairs = [];
     for (let i = 0; i < plies.length; i += 2) {
@@ -494,8 +546,8 @@ export default function Analyzer() {
                   <div className="label">Best/good moves</div>
                 </div>
                 <div className="stat-tile">
-                  <div className="value">{gameSummary.acpl}</div>
-                  <div className="label">Avg. centipawn loss</div>
+                  <div className={`value classification-${consistencyClass}`}>{consistency.label}</div>
+                  <div className="label">Consistency</div>
                 </div>
                 <div className="stat-tile">
                   <div className="value classification-mistake">{gameSummary.counts.mistake}</div>
@@ -576,9 +628,12 @@ export default function Analyzer() {
                   )}
                 </p>
                 {currentPly.classification === 'best' || currentPly.classification === 'good' ? (
-                  <p style={{ fontSize: '0.95rem' }} className="classification-best">
-                    {currentPly.classification === 'best' ? 'This was the engine\'s top choice.' : 'A strong move — close to the engine\'s top choice.'}
-                  </p>
+                  <div>
+                    <p style={{ fontSize: '0.95rem' }} className="classification-best">
+                      {currentPly.classification === 'best' ? 'This was the engine\'s top choice.' : 'A strong move — close to the engine\'s top choice.'}
+                    </p>
+                    <OtherGoodMoves ply={currentPly} />
+                  </div>
                 ) : (
                   <ExplanationBlock ply={currentPly} />
                 )}
@@ -640,42 +695,58 @@ export default function Analyzer() {
 
             <h3 style={{ marginTop: 18 }}>Mistakes to fix ({blunders.length})</h3>
             {blunders.length === 0 && <p>Run analysis to detect blunders and mistakes.</p>}
-            <ul className="list-plain">
-              {blunders.map((p) => (
-                <li
-                  key={p.ply}
-                  role="button"
-                  tabIndex={0}
-                  aria-pressed={cursor === p.ply}
-                  aria-label={`Jump to move ${Math.ceil(p.ply / 2)}, ${p.san}, ${p.classification}`}
-                  className={`move-row ${cursor === p.ply ? 'active' : ''}`}
-                  style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6, cursor: 'pointer' }}
-                  onClick={() => setCursor(p.ply)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setCursor(p.ply);
-                    }
-                  }}
+            {currentMistake && (
+              <div className="move-row active" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 10, cursor: 'default' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>
+                    Move {Math.ceil(currentMistake.ply / 2)} <strong>{currentMistake.san}</strong>{' '}
+                    <span className={`classification-${currentMistake.classification}`}>({currentMistake.classification})</span>
+                  </span>
+                  <button
+                    className="btn secondary"
+                    style={{ padding: '5px 12px', fontSize: '0.85rem' }}
+                    disabled={!!savedPuzzleIds[currentMistake.ply]}
+                    onClick={() => saveAsPuzzle(currentMistake)}
+                  >
+                    {savedPuzzleIds[currentMistake.ply] ? 'Saved ✓' : 'Save as puzzle'}
+                  </button>
+                </div>
+                <ExplanationBlock ply={currentMistake} compact />
+                <div
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, paddingTop: 10, borderTop: '1px solid var(--border)' }}
+                  role="group"
+                  aria-label="Browse mistakes"
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>
-                      Move {Math.ceil(p.ply / 2)} <strong>{p.san}</strong>{' '}
-                      <span className={`classification-${p.classification}`}>({p.classification})</span>
-                    </span>
-                    <button
-                      className="btn secondary"
-                      style={{ padding: '5px 12px', fontSize: '0.85rem' }}
-                      disabled={!!savedPuzzleIds[p.ply]}
-                      onClick={(e) => { e.stopPropagation(); saveAsPuzzle(p); }}
-                    >
-                      {savedPuzzleIds[p.ply] ? 'Saved ✓' : 'Save as puzzle'}
-                    </button>
-                  </div>
-                  <ExplanationBlock ply={p} compact />
-                </li>
-              ))}
-            </ul>
+                  <button
+                    className="btn secondary"
+                    aria-label="Previous mistake"
+                    disabled={mistakeIndex === 0}
+                    onClick={() => {
+                      const next = mistakeIndex - 1;
+                      setMistakeIndex(next);
+                      setCursor(blunders[next].ply);
+                    }}
+                  >
+                    <span aria-hidden="true">← Prev</span>
+                  </button>
+                  <span className="text-small">
+                    Mistake {mistakeIndex + 1} of {blunders.length}
+                  </span>
+                  <button
+                    className="btn secondary"
+                    aria-label="Next mistake"
+                    disabled={mistakeIndex >= blunders.length - 1}
+                    onClick={() => {
+                      const next = mistakeIndex + 1;
+                      setMistakeIndex(next);
+                      setCursor(blunders[next].ply);
+                    }}
+                  >
+                    <span aria-hidden="true">Next →</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         </>

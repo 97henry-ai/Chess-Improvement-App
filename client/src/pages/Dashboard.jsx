@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useUser } from '../UserContext.jsx';
 import { api } from '../api.js';
 import { analyzeGamesBatch } from '../engine/analyzeGame.js';
+import { acplLevel } from '../accuracyLabel.js';
 
 const TIME_CLASS_LABELS = { bullet: 'Bullet', blitz: 'Blitz', rapid: 'Rapid', daily: 'Daily' };
 
@@ -11,14 +12,6 @@ const PHASE_INFO = {
   middlegame: { label: 'Middlegame', description: 'The tactical heart of the game', lessonCategory: 'tactics' },
   endgame: { label: 'Endgame', description: 'The final stretch, fewer pieces on the board', lessonCategory: 'endgames' },
 };
-
-/** Average centipawn loss (ACPL) bands, roughly matching how chess.com/Lichess describe accuracy at club level. */
-function acplLevel(acpl) {
-  if (acpl <= 40) return { label: 'Strong', tone: 'win' };
-  if (acpl <= 80) return { label: 'Solid', tone: '' };
-  if (acpl <= 150) return { label: 'Needs work', tone: 'draw' };
-  return { label: 'Priority focus', tone: 'loss' };
-}
 
 function buildTrainingPlan(performance, lessons) {
   if (!performance || !performance.overall || performance.overall.moves === 0) return [];
@@ -211,7 +204,7 @@ export default function Dashboard() {
               <h3>Performance summary</h3>
               <p>
                 Based on {performance.gamesAnalyzed} Stockfish-analyzed game{performance.gamesAnalyzed === 1 ? '' : 's'},
-                broken down into the three basic phases of a chess game. Lower average centipawn loss (ACPL) is better.
+                broken down into the three basic phases of a chess game.
               </p>
               <div className="grid grid-3" style={{ marginTop: 14 }}>
                 {Object.entries(performance.phases).map(([phase, phaseStats]) => {
@@ -221,10 +214,11 @@ export default function Dashboard() {
                     <div key={phase} className="stat-tile">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
-                          <div className="value">{phaseStats.moves >= 3 ? phaseStats.acpl : '—'}</div>
-                          <div className="label">{info.label} ACPL</div>
+                          <div className={`value ${level ? `classification-${level.tone === 'win' ? 'best' : level.tone === 'loss' ? 'blunder' : level.tone === 'draw' ? 'mistake' : 'good'}` : ''}`}>
+                            {level ? level.label : '—'}
+                          </div>
+                          <div className="label">{info.label}</div>
                         </div>
-                        {level && <span className={`tag ${level.tone}`}>{level.label}</span>}
                       </div>
                       <p className="text-small" style={{ marginTop: 10, marginBottom: 0 }}>
                         {phaseStats.moves >= 3
@@ -250,7 +244,9 @@ export default function Dashboard() {
                         <strong>{i + 1}. {item.info.label}</strong>{' '}
                         <span className={`tag ${item.level.tone}`}>{item.level.label}</span>
                       </div>
-                      <span className="text-small">~{item.stats.acpl} ACPL · {item.stats.blunders} blunders</span>
+                      <span className="text-small">
+                        {item.stats.blunders} blunder{item.stats.blunders === 1 ? '' : 's'}, {item.stats.mistakes} mistake{item.stats.mistakes === 1 ? '' : 's'}
+                      </span>
                     </div>
                     {item.recommended.length > 0 && (
                       <div className="badge-row" style={{ marginBottom: 0, marginTop: 10 }}>
