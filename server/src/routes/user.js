@@ -22,8 +22,9 @@ router.get('/:username/stats', async (req, res) => {
   }
 });
 
-router.get('/:username/weakness-profile', (req, res) => {
-  const row = db.prepare('SELECT data, updated_at FROM weakness_profile WHERE username = ?').get(req.params.username);
+router.get('/:username/weakness-profile', async (req, res) => {
+  const { rows } = await db.query('SELECT data, updated_at FROM weakness_profile WHERE username = $1', [req.params.username]);
+  const row = rows[0];
   if (!row) return res.json({ themes: [], updated_at: null });
   res.json({ ...JSON.parse(row.data), updated_at: row.updated_at });
 });

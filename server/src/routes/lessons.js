@@ -27,25 +27,22 @@ router.get('/:id', (req, res) => {
  * Weakness profile: mine theme frequency from saved blunder puzzles (weighted by eval_loss)
  * and from low puzzle solve-rates, then recommend lessons whose themeTags overlap.
  */
-router.post('/:username/recompute', (req, res) => {
+router.post('/:username/recompute', async (req, res) => {
   const { username } = req.params;
 
-  const blunderThemes = db
-    .prepare(
-      `SELECT theme, COUNT(*) count, AVG(eval_loss) avg_loss
-       FROM puzzles WHERE username = ? AND source = 'custom' GROUP BY theme ORDER BY count DESC`
-    )
-    .all(username);
+  const { rows: blunderThemes } = await db.query(
+    `SELECT theme, COUNT(*)::int count, AVG(eval_loss) avg_loss
+     FROM puzzles WHERE username = $1 AND source = 'custom' GROUP BY theme ORDER BY count DESC`,
+    [username]
+  );
 
-  const weakThemes = db
-    .prepare(
-      `SELECT p.theme, COUNT(*) attempts, SUM(a.correct) solved
-       FROM puzzle_attempts a JOIN puzzles p ON p.id = a.puzzle_id
-       WHERE a.username = ? GROUP BY p.theme HAVING attempts >= 2`
-    )
-    .all(username)
-    .filter((t) => t.solved / t.attempts < 0.5)
-    .map((t) => t.theme);
+  const { rows: weakThemeRows } = await db.query(
+    `SELECT p.theme, COUNT(*)::int attempts, COALESCE(SUM(a.correct), 0)::int solved
+     FROM puzzle_attempts a JOIN puzzles p ON p.id = a.puzzle_id
+     WHERE a.username = $1 GROUP BY p.theme HAVING COUNT(*) >= 2`,
+    [username]
+  );
+  const weakThemes = weakThemeRows.filter((t) => t.solved / t.attempts < 0.5).map((t) => t.theme);
 
   const themeScores = new Map();
   for (const t of blunderThemes) {
@@ -71,10 +68,11 @@ router.post('/:username/recompute', (req, res) => {
   }
 
   const data = { themes: rankedThemes, recommendedLessons };
-  db.prepare(
-    `INSERT INTO weakness_profile (username, data, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-     ON CONFLICT(username) DO UPDATE SET data = excluded.data, updated_at = CURRENT_TIMESTAMP`
-  ).run(username, JSON.stringify(data));
+  await db.query(
+    `INSERT INTO weakness_profile (username, data, updated_at) VALUES ($1, $2, NOW())
+     ON CONFLICT (username) DO UPDATE SET data = excluded.data, updated_at = NOW()`,
+    [username, JSON.stringify(data)]
+  );
 
   res.json(data);
 });

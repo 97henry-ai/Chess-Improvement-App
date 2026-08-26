@@ -1,30 +1,32 @@
-import Database from 'better-sqlite3';
-import path from 'node:path';
-import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import pg from 'pg';
+import 'dotenv/config';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.join(__dirname, '..', '..', 'data');
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+const { Pool } = pg;
 
-const db = new Database(path.join(dataDir, 'chess.db'));
-db.pragma('journal_mode = WAL');
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is required — set it to a Postgres connection string.');
+}
 
-db.exec(`
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false },
+});
+
+await pool.query(`
 CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   username TEXT UNIQUE NOT NULL,
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-  last_synced_at TEXT
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  last_synced_at TIMESTAMPTZ
 );
 
 CREATE TABLE IF NOT EXISTS games (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   username TEXT NOT NULL,
   chesscom_url TEXT UNIQUE,
   pgn TEXT NOT NULL,
   time_class TEXT,
-  end_time INTEGER,
+  end_time BIGINT,
   white TEXT,
   black TEXT,
   white_rating INTEGER,
@@ -35,12 +37,12 @@ CREATE TABLE IF NOT EXISTS games (
   eco TEXT,
   opening_name TEXT,
   analyzed INTEGER DEFAULT 0,
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_games_username ON games(username);
 
 CREATE TABLE IF NOT EXISTS game_moves (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   game_id INTEGER NOT NULL REFERENCES games(id) ON DELETE CASCADE,
   ply INTEGER NOT NULL,
   move_san TEXT NOT NULL,
@@ -55,7 +57,7 @@ CREATE TABLE IF NOT EXISTS game_moves (
 CREATE INDEX IF NOT EXISTS idx_moves_game ON game_moves(game_id);
 
 CREATE TABLE IF NOT EXISTS puzzles (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   username TEXT NOT NULL,
   source TEXT NOT NULL DEFAULT 'custom',
   game_id INTEGER REFERENCES games(id) ON DELETE SET NULL,
@@ -66,34 +68,34 @@ CREATE TABLE IF NOT EXISTS puzzles (
   rating INTEGER,
   times_attempted INTEGER DEFAULT 0,
   times_solved INTEGER DEFAULT 0,
-  last_attempted_at TEXT,
+  last_attempted_at TIMESTAMPTZ,
   mastered INTEGER DEFAULT 0,
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_puzzles_username ON puzzles(username);
 
 CREATE TABLE IF NOT EXISTS puzzle_attempts (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   puzzle_id INTEGER NOT NULL REFERENCES puzzles(id) ON DELETE CASCADE,
   username TEXT NOT NULL,
   correct INTEGER NOT NULL,
-  attempted_at TEXT DEFAULT CURRENT_TIMESTAMP
+  attempted_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS weakness_profile (
   username TEXT PRIMARY KEY,
   data TEXT NOT NULL,
-  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS daily_plans (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   username TEXT NOT NULL,
   plan_date TEXT NOT NULL,
   puzzle_refs TEXT NOT NULL,
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(username, plan_date)
 );
 `);
 
-export default db;
+export default pool;
