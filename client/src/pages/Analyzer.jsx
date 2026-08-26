@@ -429,12 +429,19 @@ export default function Analyzer() {
     }
   }
 
-  const blunders = useMemo(() => plies.filter((p) => p.classification === 'blunder' || p.classification === 'mistake'), [plies]);
+  // Only the connected player's own mistakes — this section is "yours to fix",
+  // not a list of the opponent's errors mixed in with pronouns that assume you made them.
+  const blunders = useMemo(() => {
+    const moverColor = game?.player_color === 'black' ? 'b' : 'w';
+    return plies.filter((p) => (p.classification === 'blunder' || p.classification === 'mistake') && p.color === moverColor);
+  }, [plies, game]);
   useEffect(() => {
     setMistakeIndex(0);
   }, [blunders.length, gameId]);
   const currentMistake = blunders[mistakeIndex];
   const gameSummary = useMemo(() => (game ? buildGameSummary(plies, game.player_color) : null), [plies, game]);
+  const playerMoveColor = game?.player_color === 'black' ? 'b' : 'w';
+  const opponentName = game ? (game.player_color === 'white' ? game.black : game.white) || 'your opponent' : 'your opponent';
   const consistency = gameSummary ? acplLevel(gameSummary.acpl) : null;
   const consistencyClass = consistency
     ? consistency.tone === 'win' ? 'best' : consistency.tone === 'loss' ? 'blunder' : consistency.tone === 'draw' ? 'mistake' : 'good'
@@ -495,21 +502,38 @@ export default function Analyzer() {
       ) : (
         <>
           <div className="card" style={{ marginBottom: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.05rem' }}>
-                <span aria-hidden style={{ fontSize: '1.1rem' }}>♔</span>
-                <strong>{game.white || 'White'}</strong>
-                {game.white_rating && <span className="tag">{game.white_rating}</span>}
-                {game.player_color === 'white' && <span className="tag win">you</span>}
-              </div>
-              <span style={{ color: 'var(--text-dim)' }}>vs</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.05rem' }}>
-                <span aria-hidden style={{ fontSize: '1.1rem' }}>♚</span>
-                <strong>{game.black || 'Black'}</strong>
-                {game.black_rating && <span className="tag">{game.black_rating}</span>}
-                {game.player_color === 'black' && <span className="tag win">you</span>}
-              </div>
-              <span className={`tag ${game.player_result}`} style={{ marginLeft: 'auto' }}>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left', padding: '4px 8px', fontSize: '0.78rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Side</th>
+                    <th style={{ textAlign: 'left', padding: '4px 8px', fontSize: '0.78rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Player</th>
+                    <th style={{ textAlign: 'left', padding: '4px 8px', fontSize: '0.78rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Rating</th>
+                    <th style={{ textAlign: 'left', padding: '4px 8px', fontSize: '0.78rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Role</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={game.player_color === 'white' ? { background: 'var(--bg-elevated)' } : undefined}>
+                    <td style={{ padding: '6px 8px' }}><span aria-hidden="true">♔</span> White</td>
+                    <td style={{ padding: '6px 8px' }}><strong>{game.white || 'White'}</strong></td>
+                    <td style={{ padding: '6px 8px' }}>{game.white_rating ?? '—'}</td>
+                    <td style={{ padding: '6px 8px' }}>
+                      {game.player_color === 'white' ? <span className="tag win">You</span> : <span className="tag">Opponent</span>}
+                    </td>
+                  </tr>
+                  <tr style={game.player_color === 'black' ? { background: 'var(--bg-elevated)' } : undefined}>
+                    <td style={{ padding: '6px 8px' }}><span aria-hidden="true">♚</span> Black</td>
+                    <td style={{ padding: '6px 8px' }}><strong>{game.black || 'Black'}</strong></td>
+                    <td style={{ padding: '6px 8px' }}>{game.black_rating ?? '—'}</td>
+                    <td style={{ padding: '6px 8px' }}>
+                      {game.player_color === 'black' ? <span className="tag win">You</span> : <span className="tag">Opponent</span>}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div style={{ marginTop: 10 }}>
+              <span className={`tag ${game.player_result}`}>
                 {game.player_result === 'win' ? 'You won' : game.player_result === 'loss' ? 'You lost' : 'Draw'}
               </span>
             </div>
@@ -623,6 +647,10 @@ export default function Analyzer() {
                 <p style={{ marginBottom: currentPly.classification ? 6 : 0 }}>
                   Move {Math.ceil(currentPly.ply / 2)}
                   {currentPly.color === 'w' ? '.' : '...'} <strong>{currentPly.san}</strong>
+                  {' '}
+                  <span className="text-small">
+                    ({currentPly.color === playerMoveColor ? 'you' : opponentName})
+                  </span>
                   {currentPly.classification && (
                     <> — <span className={`classification-${currentPly.classification}`}>{currentPly.classification}</span></>
                   )}
@@ -630,12 +658,30 @@ export default function Analyzer() {
                 {currentPly.classification === 'best' || currentPly.classification === 'good' ? (
                   <div>
                     <p style={{ fontSize: '0.95rem' }} className="classification-best">
-                      {currentPly.classification === 'best' ? 'This was the engine\'s top choice.' : 'A strong move — close to the engine\'s top choice.'}
+                      {currentPly.color === playerMoveColor
+                        ? currentPly.classification === 'best'
+                          ? 'This was the engine\'s top choice.'
+                          : 'A strong move — close to the engine\'s top choice.'
+                        : `${opponentName} found a strong move here.`}
                     </p>
                     <OtherGoodMoves ply={currentPly} />
                   </div>
-                ) : (
+                ) : currentPly.color === playerMoveColor ? (
                   <ExplanationBlock ply={currentPly} />
+                ) : (
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <CoachAvatar size={32} />
+                    <div style={{ fontSize: '0.92rem', lineHeight: 1.6, fontStyle: 'italic' }}>
+                      <p style={{ margin: '0 0 8px' }}>
+                        &ldquo;{opponentName}'s {currentPly.san} wasn't their strongest try here
+                        {(currentPly.alternatives || []).find((a) => a.san !== currentPly.san)
+                          ? ` — you could have made it harder for them.`
+                          : '.'}
+                        &rdquo;
+                      </p>
+                      <OtherGoodMoves ply={currentPly} />
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -693,7 +739,7 @@ export default function Analyzer() {
               ))}
             </ul>
 
-            <h3 style={{ marginTop: 18 }}>Mistakes to fix ({blunders.length})</h3>
+            <h3 style={{ marginTop: 18 }}>Your mistakes to fix ({blunders.length})</h3>
             {blunders.length === 0 && <p>Run analysis to detect blunders and mistakes.</p>}
             {currentMistake && (
               <div className="move-row active" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 10, cursor: 'default' }}>
