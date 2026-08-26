@@ -687,57 +687,74 @@ export default function Analyzer() {
             )}
 
             <h3 style={{ marginTop: 18 }}>Move list</h3>
-            <ul className="list-plain" style={{ maxHeight: 220, overflowY: 'auto' }}>
-              {movePairs.map((pair) => (
-                <li key={pair.num} className="move-row" style={{ gap: 10 }}>
-                  <span style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', minWidth: 26 }}>{pair.num}.</span>
-                  <button
-                    onClick={() => setCursor(pair.white.ply)}
-                    aria-current={cursor === pair.white.ply ? 'true' : undefined}
-                    aria-label={`Move ${pair.num}. ${pair.white.san}${pair.white.classification ? `, ${pair.white.classification}` : ''}`}
-                    className={`move-san-btn ${pair.white.classification ? `classification-${pair.white.classification}` : ''}`}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: cursor === pair.white.ply ? 'var(--bg-elevated)' : 'transparent',
-                      border: cursor === pair.white.ply ? '1px solid var(--accent)' : '1px solid transparent',
-                      borderRadius: 6,
-                      padding: '4px 8px',
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '0.95rem',
-                      cursor: 'pointer',
-                      color: pair.white.classification ? undefined : 'var(--text)',
-                    }}
-                  >
-                    {pair.white.san}
-                  </button>
-                  {pair.black && (
-                    <button
-                      onClick={() => setCursor(pair.black.ply)}
-                      aria-current={cursor === pair.black.ply ? 'true' : undefined}
-                      aria-label={`Move ${pair.num}... ${pair.black.san}${pair.black.classification ? `, ${pair.black.classification}` : ''}`}
-                      className={`move-san-btn ${pair.black.classification ? `classification-${pair.black.classification}` : ''}`}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: cursor === pair.black.ply ? 'var(--bg-elevated)' : 'transparent',
-                        border: cursor === pair.black.ply ? '1px solid var(--accent)' : '1px solid transparent',
-                        borderRadius: 6,
-                        padding: '4px 8px',
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '0.95rem',
-                        cursor: 'pointer',
-                        color: pair.black.classification ? undefined : 'var(--text)',
-                      }}
-                    >
-                      {pair.black.san}
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <div style={{ maxHeight: 260, overflowY: 'auto', overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left', padding: '4px 8px', fontSize: '0.78rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.04em', position: 'sticky', top: 0, background: 'var(--bg-card)' }}>#</th>
+                    <th style={{ textAlign: 'left', padding: '4px 8px', fontSize: '0.78rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.04em', position: 'sticky', top: 0, background: 'var(--bg-card)' }}>White</th>
+                    <th style={{ textAlign: 'left', padding: '4px 8px', fontSize: '0.78rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.04em', position: 'sticky', top: 0, background: 'var(--bg-card)' }}>Black</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {movePairs.map((pair) => (
+                    <tr key={pair.num} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '4px 8px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>{pair.num}</td>
+                      <td style={{ padding: '4px 4px' }}>
+                        <button
+                          onClick={() => setCursor(pair.white.ply)}
+                          aria-current={cursor === pair.white.ply ? 'true' : undefined}
+                          aria-label={`Move ${pair.num}. ${pair.white.san}${pair.white.classification ? `, ${pair.white.classification}` : ''}`}
+                          className={`move-san-btn ${pair.white.classification ? `classification-${pair.white.classification}` : ''}`}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '100%',
+                            background: cursor === pair.white.ply ? 'var(--bg-elevated)' : 'transparent',
+                            border: cursor === pair.white.ply ? '1px solid var(--accent)' : '1px solid transparent',
+                            borderRadius: 6,
+                            padding: '4px 8px',
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '0.95rem',
+                            cursor: 'pointer',
+                            color: pair.white.classification ? undefined : 'var(--text)',
+                          }}
+                        >
+                          {pair.white.san}
+                        </button>
+                      </td>
+                      <td style={{ padding: '4px 4px' }}>
+                        {pair.black && (
+                          <button
+                            onClick={() => setCursor(pair.black.ply)}
+                            aria-current={cursor === pair.black.ply ? 'true' : undefined}
+                            aria-label={`Move ${pair.num}... ${pair.black.san}${pair.black.classification ? `, ${pair.black.classification}` : ''}`}
+                            className={`move-san-btn ${pair.black.classification ? `classification-${pair.black.classification}` : ''}`}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '100%',
+                              background: cursor === pair.black.ply ? 'var(--bg-elevated)' : 'transparent',
+                              border: cursor === pair.black.ply ? '1px solid var(--accent)' : '1px solid transparent',
+                              borderRadius: 6,
+                              padding: '4px 8px',
+                              fontFamily: 'var(--font-mono)',
+                              fontSize: '0.95rem',
+                              cursor: 'pointer',
+                              color: pair.black.classification ? undefined : 'var(--text)',
+                            }}
+                          >
+                            {pair.black.san}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
             <h3 style={{ marginTop: 18 }}>Your mistakes to fix ({blunders.length})</h3>
             {blunders.length === 0 && <p>Run analysis to detect blunders and mistakes.</p>}
