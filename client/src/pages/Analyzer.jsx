@@ -401,14 +401,30 @@ export default function Analyzer() {
         <h1>Game Analyzer</h1>
         <p>Pick a game to run a full Stockfish analysis, review your mistakes, and save them as custom puzzles.</p>
         {!username && <div className="empty-state card">Connect your chess.com account on the Dashboard first.</div>}
+        {error && <div className="card error-banner" role="alert" style={{ marginBottom: 16 }}>{error}</div>}
         <ul className="list-plain">
           {games.map((g) => (
-            <li key={g.id} className="move-row card" style={{ marginBottom: 6 }} onClick={() => navigate(`/analyzer/${g.id}`)}>
-              <span>
-                <strong>{g.white}</strong> ({g.white_rating}) vs <strong>{g.black}</strong> ({g.black_rating}) · {g.time_class} ·{' '}
-                {g.opening_name || 'Unknown opening'}
-              </span>
-              <span className={`tag ${g.player_result}`}>{g.player_result}</span>
+            <li key={g.id} className="move-row card" style={{ marginBottom: 6, padding: 0 }}>
+              <button
+                type="button"
+                onClick={() => navigate(`/analyzer/${g.id}`)}
+                style={{
+                  all: 'unset',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  width: '100%',
+                  padding: '9px 12px',
+                  boxSizing: 'border-box',
+                  cursor: 'pointer',
+                }}
+              >
+                <span>
+                  <strong>{g.white}</strong> ({g.white_rating}) vs <strong>{g.black}</strong> ({g.black_rating}) · {g.time_class} ·{' '}
+                  {g.opening_name || 'Unknown opening'}
+                </span>
+                <span className={`tag ${g.player_result}`}>{g.player_result}</span>
+              </button>
             </li>
           ))}
         </ul>
@@ -421,9 +437,9 @@ export default function Analyzer() {
       <button className="btn secondary" onClick={() => navigate('/analyzer')} style={{ marginBottom: 16 }}>
         ← All games
       </button>
-      {error && <div className="card" style={{ borderColor: 'var(--danger)', marginBottom: 16 }}>{error}</div>}
+      {error && <div className="card error-banner" role="alert" style={{ marginBottom: 16 }}>{error}</div>}
       {!game ? (
-        <p>Loading game…</p>
+        <p role="status" aria-live="polite">Loading game…</p>
       ) : (
         <>
           <div className="card" style={{ marginBottom: 20 }}>
@@ -514,11 +530,19 @@ export default function Analyzer() {
                 ...interactionOptions,
               }}
             />
-            <div style={{ display: 'flex', gap: 8, marginTop: 12, justifyContent: 'center' }}>
-              <button className="btn secondary" onClick={() => setCursor(0)} disabled={cursor === 0}>⏮</button>
-              <button className="btn secondary" onClick={() => setCursor((c) => Math.max(0, c - 1))} disabled={cursor === 0}>◀</button>
-              <button className="btn secondary" onClick={() => setCursor((c) => Math.min(plies.length, c + 1))} disabled={cursor >= plies.length}>▶</button>
-              <button className="btn secondary" onClick={() => setCursor(plies.length)} disabled={cursor >= plies.length}>⏭</button>
+            <div style={{ display: 'flex', gap: 8, marginTop: 12, justifyContent: 'center' }} role="group" aria-label="Move navigation">
+              <button className="btn secondary" aria-label="Go to start of game" onClick={() => setCursor(0)} disabled={cursor === 0}>
+                <span aria-hidden="true">⏮</span>
+              </button>
+              <button className="btn secondary" aria-label="Previous move" onClick={() => setCursor((c) => Math.max(0, c - 1))} disabled={cursor === 0}>
+                <span aria-hidden="true">◀</span>
+              </button>
+              <button className="btn secondary" aria-label="Next move" onClick={() => setCursor((c) => Math.min(plies.length, c + 1))} disabled={cursor >= plies.length}>
+                <span aria-hidden="true">▶</span>
+              </button>
+              <button className="btn secondary" aria-label="Go to end of game" onClick={() => setCursor(plies.length)} disabled={cursor >= plies.length}>
+                <span aria-hidden="true">⏭</span>
+              </button>
             </div>
             {isExploring ? (
               <p style={{ textAlign: 'center', marginTop: 8, fontSize: '0.9rem' }}>
@@ -537,7 +561,7 @@ export default function Analyzer() {
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3>Analysis</h3>
-              <button className="btn" onClick={runFullAnalysis} disabled={analyzing}>
+              <button className="btn" onClick={runFullAnalysis} disabled={analyzing} aria-live="polite">
                 {analyzing ? `Analyzing… ${progress}%` : 'Run Stockfish analysis'}
               </button>
             </div>
@@ -568,12 +592,17 @@ export default function Analyzer() {
                   <span style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', minWidth: 26 }}>{pair.num}.</span>
                   <button
                     onClick={() => setCursor(pair.white.ply)}
-                    className={pair.white.classification ? `classification-${pair.white.classification}` : ''}
+                    aria-current={cursor === pair.white.ply ? 'true' : undefined}
+                    aria-label={`Move ${pair.num}. ${pair.white.san}${pair.white.classification ? `, ${pair.white.classification}` : ''}`}
+                    className={`move-san-btn ${pair.white.classification ? `classification-${pair.white.classification}` : ''}`}
                     style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       background: cursor === pair.white.ply ? 'var(--bg-elevated)' : 'transparent',
                       border: cursor === pair.white.ply ? '1px solid var(--accent)' : '1px solid transparent',
                       borderRadius: 6,
-                      padding: '2px 8px',
+                      padding: '4px 8px',
                       fontFamily: 'var(--font-mono)',
                       fontSize: '0.95rem',
                       cursor: 'pointer',
@@ -585,12 +614,17 @@ export default function Analyzer() {
                   {pair.black && (
                     <button
                       onClick={() => setCursor(pair.black.ply)}
-                      className={pair.black.classification ? `classification-${pair.black.classification}` : ''}
+                      aria-current={cursor === pair.black.ply ? 'true' : undefined}
+                      aria-label={`Move ${pair.num}... ${pair.black.san}${pair.black.classification ? `, ${pair.black.classification}` : ''}`}
+                      className={`move-san-btn ${pair.black.classification ? `classification-${pair.black.classification}` : ''}`}
                       style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         background: cursor === pair.black.ply ? 'var(--bg-elevated)' : 'transparent',
                         border: cursor === pair.black.ply ? '1px solid var(--accent)' : '1px solid transparent',
                         borderRadius: 6,
-                        padding: '2px 8px',
+                        padding: '4px 8px',
                         fontFamily: 'var(--font-mono)',
                         fontSize: '0.95rem',
                         cursor: 'pointer',
@@ -610,9 +644,19 @@ export default function Analyzer() {
               {blunders.map((p) => (
                 <li
                   key={p.ply}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={cursor === p.ply}
+                  aria-label={`Jump to move ${Math.ceil(p.ply / 2)}, ${p.san}, ${p.classification}`}
                   className={`move-row ${cursor === p.ply ? 'active' : ''}`}
                   style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6, cursor: 'pointer' }}
                   onClick={() => setCursor(p.ply)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setCursor(p.ply);
+                    }
+                  }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>

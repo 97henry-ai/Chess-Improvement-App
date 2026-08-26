@@ -33,17 +33,18 @@ export default function Lessons() {
         or well-known training resource. Highlighted picks are tailored to your weaknesses.
       </p>
 
-      {error && <div className="card" style={{ borderColor: 'var(--danger)', marginBottom: 16 }}>{error}</div>}
+      {error && <div className="card error-banner" role="alert" style={{ marginBottom: 16 }}>{error}</div>}
 
-      <div className="badge-row" style={{ marginBottom: 20 }}>
-        <button className={`btn ${filter === 'all' ? '' : 'secondary'}`} onClick={() => setFilter('all')}>All</button>
+      <div className="badge-row" role="tablist" aria-label="Filter lessons by category" style={{ marginBottom: 20 }}>
+        <button role="tab" aria-selected={filter === 'all'} className={`btn ${filter === 'all' ? '' : 'secondary'}`} onClick={() => setFilter('all')}>All</button>
         {CATEGORIES.map((c) => (
-          <button key={c} className={`btn ${filter === c ? '' : 'secondary'}`} onClick={() => setFilter(c)}>
+          <button key={c} role="tab" aria-selected={filter === c} className={`btn ${filter === c ? '' : 'secondary'}`} onClick={() => setFilter(c)}>
             {c}
           </button>
         ))}
         <button
           className="btn secondary"
+          aria-expanded={showResources}
           style={{ marginLeft: 'auto' }}
           onClick={() => setShowResources((v) => !v)}
         >

@@ -11,8 +11,8 @@ export default function LessonDetail() {
     api.getLesson(lessonId).then(setLesson).catch((e) => setError(e.message));
   }, [lessonId]);
 
-  if (error) return <div className="card">{error}</div>;
-  if (!lesson) return <p>Loading…</p>;
+  if (error) return <div className="card error-banner" role="alert">{error}</div>;
+  if (!lesson) return <p role="status" aria-live="polite">Loading…</p>;
 
   return (
     <div>

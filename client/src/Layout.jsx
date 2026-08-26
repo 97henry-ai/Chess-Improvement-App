@@ -7,12 +7,13 @@ export default function Layout() {
 
   return (
     <div className="app-shell">
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       <header className="topbar">
         <div className="brand">
-          <span className="brand-icon">♞</span>
+          <span className="brand-icon" aria-hidden="true">♞</span>
           <span>ChessCoach</span>
         </div>
-        <nav>
+        <nav aria-label="Main">
           <NavLink to="/" end>Dashboard</NavLink>
           <NavLink to="/analyzer">Analyzer</NavLink>
           <NavLink to="/puzzles">Puzzles</NavLink>
@@ -21,7 +22,7 @@ export default function Layout() {
         <ThemeToggle />
         <div className="user-pill">{username ? `@${username}` : 'No account linked'}</div>
       </header>
-      <main className="content">
+      <main className="content" id="main-content" tabIndex={-1}>
         <Outlet />
       </main>
     </div>

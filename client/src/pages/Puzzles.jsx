@@ -201,14 +201,29 @@ export default function Puzzles() {
       <h1>Puzzle Trainer</h1>
       <p>A fresh personalized set of 10 every day, plus your own blunders and our full curated tactics set.</p>
 
-      <div className="badge-row" style={{ marginBottom: 18 }}>
-        <button className={`btn ${source === 'daily' ? '' : 'secondary'}`} onClick={() => setSource('daily')}>
+      <div className="badge-row" role="tablist" aria-label="Puzzle set" style={{ marginBottom: 18 }}>
+        <button
+          role="tab"
+          aria-selected={source === 'daily'}
+          className={`btn ${source === 'daily' ? '' : 'secondary'}`}
+          onClick={() => setSource('daily')}
+        >
           Today's 10 {dailyPuzzles.length > 0 ? `(${dailySolvedCount}/${dailyPuzzles.length})` : ''}
         </button>
-        <button className={`btn ${source === 'mine' ? '' : 'secondary'}`} onClick={() => setSource('mine')}>
+        <button
+          role="tab"
+          aria-selected={source === 'mine'}
+          className={`btn ${source === 'mine' ? '' : 'secondary'}`}
+          onClick={() => setSource('mine')}
+        >
           My blunders ({customPuzzles.length})
         </button>
-        <button className={`btn ${source === 'curated' ? '' : 'secondary'}`} onClick={() => setSource('curated')}>
+        <button
+          role="tab"
+          aria-selected={source === 'curated'}
+          className={`btn ${source === 'curated' ? '' : 'secondary'}`}
+          onClick={() => setSource('curated')}
+        >
           Curated tactics ({curatedPuzzles.length})
         </button>
         {source === 'curated' && chessComRating && (
@@ -222,7 +237,7 @@ export default function Puzzles() {
       </div>
 
       {source === 'daily' && dailyPuzzles.length > 0 && (
-        <div className="badge-row" style={{ marginBottom: 18 }}>
+        <div className="badge-row" role="group" aria-label="Today's puzzles" style={{ marginBottom: 18 }}>
           {dailyPuzzles.map((p, i) => {
             const solved = dailySolved.has(puzzleRef(p));
             return (
@@ -230,9 +245,12 @@ export default function Puzzles() {
                 key={puzzleRef(p)}
                 onClick={() => setIndex(i)}
                 className="tag"
+                aria-current={i === index ? 'true' : undefined}
+                aria-label={`Puzzle ${i + 1}${solved ? ', solved' : ''}${i === index ? ', current' : ''}`}
                 style={{
                   cursor: 'pointer',
                   minWidth: 30,
+                  minHeight: 28,
                   textAlign: 'center',
                   fontWeight: 700,
                   color: solved ? 'var(--accent)' : i === index ? 'var(--text)' : 'var(--text-dim)',
@@ -246,7 +264,7 @@ export default function Puzzles() {
         </div>
       )}
 
-      {error && <div className="card" style={{ borderColor: 'var(--danger)', marginBottom: 16 }}>{error}</div>}
+      {error && <div className="card error-banner" role="alert" style={{ marginBottom: 16 }}>{error}</div>}
 
       {source === 'daily' && !username && (
         <div className="empty-state card">Connect your chess.com account on the Dashboard to get a personalized daily plan.</div>
@@ -288,8 +306,10 @@ export default function Puzzles() {
             <h3>{puzzle.theme?.replace(/-/g, ' ') || 'Tactic'}</h3>
             <p>Find the best move for {boardOrientation === 'white' ? 'White' : 'Black'}.</p>
 
-            {status === 'wrong' && <p className="classification-blunder">Not quite — try again.</p>}
-            {status === 'correct' && <p className="classification-best">Solved! Well done.</p>}
+            <div role="status" aria-live="polite">
+              {status === 'wrong' && <p className="classification-blunder">Not quite — try again.</p>}
+              {status === 'correct' && <p className="classification-best">Solved! Well done.</p>}
+            </div>
 
             <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
               <button className="btn secondary" onClick={nextPuzzle}>Skip / Next puzzle</button>

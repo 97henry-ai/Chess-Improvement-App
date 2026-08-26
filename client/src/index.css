@@ -73,6 +73,42 @@ button {
   outline-offset: 2px;
 }
 
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  padding: 12px 20px;
+  border-radius: 0 0 var(--radius-sm) 0;
+  font-weight: 700;
+  text-decoration: none;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+.error-banner {
+  border-color: var(--danger) !important;
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
@@ -265,6 +301,12 @@ p { line-height: 1.65; color: var(--text-dim); font-size: 1rem; }
 }
 .move-row:hover { background: var(--bg-elevated); }
 .move-row.active { background: var(--bg-elevated); border: 1px solid var(--accent); }
+.move-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.move-san-btn {
+  min-height: 28px;
+  min-width: 28px;
+}
 
 .classification-blunder { color: var(--danger); font-weight: 600; }
 .classification-mistake { color: var(--warning); font-weight: 600; }

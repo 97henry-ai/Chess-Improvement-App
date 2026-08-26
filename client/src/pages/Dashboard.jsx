@@ -145,13 +145,16 @@ export default function Dashboard() {
       <h1>Welcome to ChessCoach</h1>
       <p>Link your chess.com account to get a personalized improvement plan built from your own games.</p>
 
-      <form onSubmit={handleConnect} style={{ display: 'flex', gap: 10, margin: '18px 0 28px' }}>
+      <form onSubmit={handleConnect} style={{ display: 'flex', gap: 10, margin: '18px 0 28px', flexWrap: 'wrap' }}>
+        <label htmlFor="chesscom-username" className="visually-hidden">Chess.com username</label>
         <input
+          id="chesscom-username"
           className="input"
           placeholder="chess.com username"
+          autoComplete="username"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          style={{ flex: 1, maxWidth: 320 }}
+          style={{ flex: 1, maxWidth: 320, minWidth: 200 }}
         />
         <button className="btn" type="submit">Connect</button>
         {username && (
@@ -161,18 +164,22 @@ export default function Dashboard() {
         )}
       </form>
 
-      {error && <div className="card" style={{ borderColor: 'var(--danger)', marginBottom: 20 }}>{error}</div>}
+      {error && (
+        <div className="card error-banner" role="alert" style={{ marginBottom: 20 }}>
+          {error}
+        </div>
+      )}
 
       {!username && (
         <div className="empty-state card">Enter your chess.com username above to get started.</div>
       )}
 
-      {username && loading && <p>Loading your chess data…</p>}
+      {username && loading && <p role="status" aria-live="polite">Loading your chess data…</p>}
 
       {username && !loading && (
         <>
           {analyzing && (
-            <div className="card" style={{ marginBottom: 20, borderColor: 'var(--accent)' }}>
+            <div className="card" role="status" aria-live="polite" style={{ marginBottom: 20, borderColor: 'var(--accent)' }}>
               <p style={{ margin: 0 }}>
                 <strong>Auto-analyzing your games with Stockfish…</strong> {analysisProgress} This runs automatically
                 whenever new games are synced — feel free to keep browsing.
