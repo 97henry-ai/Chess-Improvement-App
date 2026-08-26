@@ -18,32 +18,12 @@
     "rating": 1000
   },
   {
-    "fen": "3r2k1/p4ppp/1p6/2p5/4P3/2Nb1P2/PP4PP/2R3K1 b - - 0 1",
-    "solution_san": [
-      "Rd1+",
-      "Rxd1",
-      "Bxc1"
-    ],
-    "theme": "deflection",
-    "rating": 1200
-  },
-  {
     "fen": "r1bq1rk1/pp2bppp/2n1pn2/3p4/2PP4/2N1PN2/PP2BPPP/R1BQ1RK1 w - - 0 9",
     "solution_san": [
       "c5"
     ],
     "theme": "pawn-break",
     "rating": 1300
-  },
-  {
-    "fen": "5rk1/pp3ppp/2p5/2b1P3/2B5/2P5/PP3PPP/3R2K1 w - - 0 1",
-    "solution_san": [
-      "Bxf7+",
-      "Rxf7",
-      "Rd8#"
-    ],
-    "theme": "back-rank",
-    "rating": 1400
   },
   {
     "fen": "r4rk1/1bq1bppp/p2p1n2/1p2p3/4P3/1BN2N2/PPP2PPP/R1BQR1K1 w - - 0 13",
@@ -54,29 +34,11 @@
     "rating": 1500
   },
   {
-    "fen": "2kr3r/ppp2ppp/2n1b3/2b1P3/8/2N2N2/PPP2PPP/R1B1K2R w KQ - 0 11",
-    "solution_san": [
-      "Ng5",
-      "Bxg5",
-      "Bxg5"
-    ],
-    "theme": "double-attack",
-    "rating": 1450
-  },
-  {
-    "fen": "r1b1k2r/pppp1ppp/2n2n2/2b1p1q1/2B1P3/2NP1N2/PPP2PPP/R1BQK2R w KQkq - 4 6",
-    "solution_san": [
-      "Nd5"
-    ],
-    "theme": "fork",
-    "rating": 1350
-  },
-  {
     "fen": "6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1",
     "solution_san": [
       "Re8#"
     ],
-    "theme": "checkmate-patterns",
+    "theme": "back-rank",
     "rating": 900
   },
   {
@@ -114,29 +76,11 @@
     "rating": 1300
   },
   {
-    "fen": "r4rk1/pp2qppp/2n1bn2/2bpp3/4P3/1NN1BP2/PPPQ2PP/2KR1B1R b - - 0 12",
-    "solution_san": [
-      "exd4"
-    ],
-    "theme": "tactical-shot",
-    "rating": 1400
-  },
-  {
-    "fen": "2r3k1/5pp1/p3p2p/1p2P3/3P4/1P3P2/P5PP/2R3K1 w - - 0 1",
-    "solution_san": [
-      "Rc8+",
-      "Rxc8",
-      "Kf2"
-    ],
-    "theme": "rook-endgame",
-    "rating": 1200
-  },
-  {
     "fen": "6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1",
     "solution_san": [
       "Re8#"
     ],
-    "theme": "checkmate-patterns",
+    "theme": "back-rank",
     "rating": 800
   },
   {
@@ -156,44 +100,11 @@
     "rating": 900
   },
   {
-    "fen": "3qk3/8/8/8/8/8/8/2R1K3 w - - 0 1",
-    "solution_san": [
-      "Rc8+",
-      "Qxc8"
-    ],
-    "theme": "deflection",
-    "rating": 1000
-  },
-  {
     "fen": "3qk3/8/2N5/1B6/8/8/8/4K3 w - - 0 1",
     "solution_san": [
       "Nxd8+"
     ],
     "theme": "discovered-attack",
-    "rating": 1050
-  },
-  {
-    "fen": "4k3/8/8/3N4/8/8/2q5/4K3 w - - 0 1",
-    "solution_san": [
-      "Nc3+"
-    ],
-    "theme": "fork",
-    "rating": 950
-  },
-  {
-    "fen": "r3k3/8/8/4N3/8/8/8/4K3 w q - 0 1",
-    "solution_san": [
-      "Nd7"
-    ],
-    "theme": "fork",
-    "rating": 1000
-  },
-  {
-    "fen": "4k3/8/8/8/8/2n5/8/R3K3 w Q - 0 1",
-    "solution_san": [
-      "Rc1"
-    ],
-    "theme": "pin",
     "rating": 1050
   },
   {
@@ -219,7 +130,7 @@
       "Qxc8+",
       "Kf7"
     ],
-    "theme": "removing-the-defender",
+    "theme": "hanging-piece",
     "rating": 1100
   },
   {
@@ -229,38 +140,6 @@
     ],
     "theme": "hanging-piece",
     "rating": 800
-  },
-  {
-    "fen": "r1b1k3/8/8/8/8/8/8/R3K3 w Qq - 0 1",
-    "solution_san": [
-      "Rd1"
-    ],
-    "theme": "pin",
-    "rating": 1150
-  },
-  {
-    "fen": "4k3/8/3n4/8/8/8/3R4/4K3 w - - 0 1",
-    "solution_san": [
-      "Rd4"
-    ],
-    "theme": "skewer",
-    "rating": 1000
-  },
-  {
-    "fen": "n3k3/8/8/8/8/8/8/B3K3 w - - 0 1",
-    "solution_san": [
-      "Bc3"
-    ],
-    "theme": "skewer",
-    "rating": 1050
-  },
-  {
-    "fen": "5rk1/5ppp/8/8/8/8/2Q2PPP/6K1 w - - 0 1",
-    "solution_san": [
-      "Qc8"
-    ],
-    "theme": "back-rank",
-    "rating": 1150
   },
   {
     "fen": "6k1/4Qppp/8/8/8/8/5PPP/6K1 w - - 0 1",
@@ -299,14 +178,6 @@
     "rating": 1150
   },
   {
-    "fen": "2kr3r/ppp2ppp/8/8/1b6/2N5/PPP2PPP/2KR3R w - - 0 1",
-    "solution_san": [
-      "Na4"
-    ],
-    "theme": "fork",
-    "rating": 1200
-  },
-  {
     "fen": "6k1/3r1ppp/8/8/8/8/3R1PPP/6K1 w - - 0 1",
     "solution_san": [
       "Rxd7"
@@ -323,19 +194,21 @@
     "rating": 850
   },
   {
-    "fen": "r4rk1/1pp2ppp/p1n5/4N3/8/8/PPP2PPP/2KR3R w - - 0 1",
+    "fen": "4k1r1/8/8/8/6N1/8/8/4K3 w - - 0 1",
     "solution_san": [
-      "Nxc6"
+      "Nf6+"
     ],
     "theme": "fork",
-    "rating": 950
+    "rating": 1000
   },
   {
-    "fen": "4rrk1/5ppp/8/8/8/8/Q4PPP/6K1 w - - 0 1",
+    "fen": "3q4/8/8/3k4/8/8/8/R3K3 w - - 0 1",
     "solution_san": [
-      "Qa8"
+      "Rd1+",
+      "Kc5",
+      "Rxd8"
     ],
-    "theme": "back-rank",
-    "rating": 1200
+    "theme": "skewer",
+    "rating": 1050
   }
 ]
