@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { useUser } from '../UserContext.jsx';
@@ -6,6 +6,8 @@ import { api } from '../api.js';
 import { useChessInteraction } from '../engine/useChessInteraction.js';
 import { playMoveSound } from '../engine/sound.js';
 import { highestRating } from '../ratingUtils.js';
+import { explainPuzzleStep } from '../engine/puzzleExplain.js';
+import CoachAvatar from '../components/CoachAvatar.jsx';
 
 const EMPTY_CHESS = new Chess();
 
@@ -54,6 +56,9 @@ export default function Puzzles() {
   const [chessComRating, setChessComRating] = useState(null);
   const [ratingLoaded, setRatingLoaded] = useState(false);
   const [error, setError] = useState('');
+  const [explanation, setExplanation] = useState(null); // { why, solutionWhy } | null
+  const [explaining, setExplaining] = useState(false);
+  const explainTokenRef = useRef(0);
 
   useEffect(() => {
     if (username) {
@@ -119,8 +124,32 @@ export default function Puzzles() {
     } else {
       setChess(null);
     }
+    setExplanation(null);
+    setExplaining(false);
+    explainTokenRef.current++;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [puzzle?.id, puzzle?.source]);
+
+  /** Ask the engine why the correct move works, and (if given) why an attempt fell short. */
+  async function runExplanation(fenBefore, correctSan, attemptedSan) {
+    const token = ++explainTokenRef.current;
+    setExplaining(true);
+    try {
+      const moverColor = fenBefore.split(' ')[1];
+      const result = await explainPuzzleStep({ fenBefore, correctSan, attemptedSan, moverColor, theme: puzzle?.theme });
+      if (token === explainTokenRef.current) setExplanation(result);
+    } catch {
+      /* engine explanation is a nice-to-have, not critical to puzzle function */
+    } finally {
+      if (token === explainTokenRef.current) setExplaining(false);
+    }
+  }
+
+  function revealAnswer() {
+    if (!chess || !puzzle) return;
+    setExplanation(null);
+    runExplanation(chess.fen(), puzzle.solution_san[step], null);
+  }
 
   const boardOrientation = useMemo(() => {
     if (!puzzle) return 'white';
@@ -155,9 +184,12 @@ export default function Puzzles() {
       setStatus('wrong');
       playMoveSound('wrong');
       recordAttempt(false);
+      setExplanation(null);
+      runExplanation(move.before, puzzle.solution_san[step], move.san);
       return;
     }
 
+    setExplanation(null);
     const nextStep = step + 1;
     if (nextStep >= puzzle.solution_san.length) {
       setStatus('correct');
@@ -165,6 +197,7 @@ export default function Puzzles() {
       recordAttempt(true);
       markSolvedIfDaily();
       setStep(nextStep);
+      runExplanation(move.before, move.san, null);
       return;
     }
 
@@ -311,8 +344,33 @@ export default function Puzzles() {
               {status === 'correct' && <p className="classification-best">Solved! Well done.</p>}
             </div>
 
-            <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+            {(explaining || explanation) && (
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginTop: 4, marginBottom: 4 }}>
+                <CoachAvatar size={32} />
+                <div style={{ fontSize: '0.95rem', lineHeight: 1.6, fontStyle: 'italic' }}>
+                  {explaining && !explanation && <p style={{ margin: 0, color: 'var(--text-dim)' }}>Thinking it through…</p>}
+                  {explanation?.why && (
+                    <p style={{ margin: '0 0 8px' }}>&ldquo;{explanation.why}&rdquo;</p>
+                  )}
+                  {explanation?.solutionWhy && (
+                    <p style={{ margin: 0, color: status === 'correct' ? undefined : 'var(--text-dim)' }}>
+                      &ldquo;<strong style={{ color: 'var(--text)' }}>
+                        {status === 'correct' ? 'Why that worked:' : 'The answer:'}
+                      </strong>{' '}
+                      {explanation.solutionWhy}&rdquo;
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
               <button className="btn secondary" onClick={nextPuzzle}>Skip / Next puzzle</button>
+              {status === 'playing' && !explanation && (
+                <button className="btn secondary" onClick={revealAnswer} disabled={explaining}>
+                  Show answer &amp; why
+                </button>
+              )}
               {status === 'correct' && <button className="btn" onClick={nextPuzzle}>Next puzzle →</button>}
             </div>
           </div>
