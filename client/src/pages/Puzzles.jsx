@@ -102,7 +102,7 @@ export default function Puzzles() {
 
   const { options: interactionOptions, reset, setLastMove } = useChessInteraction({
     chess: chess || EMPTY_CHESS,
-    disabled: !chess || !puzzle || status !== 'playing',
+    disabled: !chess || !puzzle || status === 'correct',
     onMoveMade: handleMoveMade,
   });
 
