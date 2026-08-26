@@ -40,6 +40,31 @@ function saveDailyProgress(username, date, solvedSet) {
   }
 }
 
+// Tracks every puzzle (any source) a player has ever solved, so previously-solved
+// puzzles can be marked and pushed to the back of the queue instead of resurfacing
+// as if new. Curated puzzles have no server-side attempt record (their ids aren't
+// database rows), so this is the only place that memory lives for them.
+function solvedEverKey(username) {
+  return `solvedPuzzlesEver:${username}`;
+}
+
+function loadSolvedEver(username) {
+  try {
+    const raw = localStorage.getItem(solvedEverKey(username));
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function saveSolvedEver(username, solvedSet) {
+  try {
+    localStorage.setItem(solvedEverKey(username), JSON.stringify([...solvedSet]));
+  } catch {
+    /* non-critical */
+  }
+}
+
 export default function Puzzles() {
   const { username } = useUser();
   const [source, setSource] = useState('daily'); // 'daily' | 'mine' | 'curated'
@@ -59,10 +84,13 @@ export default function Puzzles() {
   const [explanation, setExplanation] = useState(null); // { why, solutionWhy } | null
   const [explaining, setExplaining] = useState(false);
   const explainTokenRef = useRef(0);
+  const [solvedEver, setSolvedEver] = useState(new Set());
+  const [mistakeContext, setMistakeContext] = useState(null); // { moveSan, fenAfter } | null
 
   useEffect(() => {
     if (username) {
       setRatingLoaded(false);
+      setSolvedEver(loadSolvedEver(username));
       api.getCustomPuzzles(username).then(setCustomPuzzles).catch((e) => setError(e.message));
       api.getPuzzleStats(username).then(setStats).catch(() => {});
       api
@@ -73,8 +101,19 @@ export default function Puzzles() {
     } else {
       setChessComRating(null);
       setRatingLoaded(true);
+      setSolvedEver(new Set());
     }
   }, [username]);
+
+  function markSolvedEver(puzzleToMark) {
+    if (!username || !puzzleToMark) return;
+    setSolvedEver((prev) => {
+      const next = new Set(prev);
+      next.add(puzzleRef(puzzleToMark));
+      saveSolvedEver(username, next);
+      return next;
+    });
+  }
 
   // Wait until we know the player's rating (or that none is available) before
   // requesting the curated/daily sets, since the daily plan is generated once
@@ -102,8 +141,22 @@ export default function Puzzles() {
     }
   }, [ratingLoaded, chessComRating, username]);
 
-  const queue = source === 'mine' ? customPuzzles : source === 'daily' ? dailyPuzzles : curatedPuzzles;
+  // Puzzles already solved before are kept in the set (so you can still replay
+  // them deliberately) but pushed to the back of the queue rather than
+  // resurfacing ahead of ones you haven't cracked yet.
+  function deprioritizeSolved(list) {
+    if (!username || solvedEver.size === 0) return list;
+    const unsolved = list.filter((p) => !solvedEver.has(puzzleRef(p)));
+    const solved = list.filter((p) => solvedEver.has(puzzleRef(p)));
+    return [...unsolved, ...solved];
+  }
+
+  const orderedCustom = useMemo(() => deprioritizeSolved(customPuzzles), [customPuzzles, solvedEver, username]);
+  const orderedCurated = useMemo(() => deprioritizeSolved(curatedPuzzles), [curatedPuzzles, solvedEver, username]);
+
+  const queue = source === 'mine' ? orderedCustom : source === 'daily' ? dailyPuzzles : orderedCurated;
   const puzzle = queue[index];
+  const alreadySolved = puzzle && solvedEver.has(puzzleRef(puzzle));
 
   const { options: interactionOptions, reset, setLastMove } = useChessInteraction({
     chess: chess || EMPTY_CHESS,
@@ -129,6 +182,31 @@ export default function Puzzles() {
     explainTokenRef.current++;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [puzzle?.id, puzzle?.source]);
+
+  // For puzzles built from a real blunder, load the actual game so we can show
+  // a second board with the move the player really played, for comparison.
+  useEffect(() => {
+    setMistakeContext(null);
+    if (!puzzle || puzzle.source !== 'custom' || !puzzle.game_id) return;
+    let cancelled = false;
+    api
+      .getGameDetail(puzzle.game_id)
+      .then((game) => {
+        if (cancelled) return;
+        const playedMove = game.moves?.find((m) => m.fen_before === puzzle.fen);
+        if (playedMove) {
+          setMistakeContext({
+            moveSan: playedMove.move_san,
+            fenAfter: playedMove.fen_after,
+            opponent: game.player_color === 'white' ? game.black : game.white,
+          });
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [puzzle?.id, puzzle?.source, puzzle?.game_id, puzzle?.fen]);
 
   /** Ask the engine why the correct move works, and (if given) why an attempt fell short. */
   async function runExplanation(fenBefore, correctSan, attemptedSan) {
@@ -196,6 +274,7 @@ export default function Puzzles() {
       playMoveSound('success');
       recordAttempt(true);
       markSolvedIfDaily();
+      markSolvedEver(puzzle);
       setStep(nextStep);
       runExplanation(move.before, move.san, null);
       return;
@@ -215,6 +294,7 @@ export default function Puzzles() {
           setStatus('correct');
           recordAttempt(true);
           markSolvedIfDaily();
+          markSolvedEver(puzzle);
         }
       } catch {
         /* ignore malformed curated data */
@@ -259,6 +339,11 @@ export default function Puzzles() {
         >
           Curated tactics ({curatedPuzzles.length})
         </button>
+        {source !== 'daily' && username && solvedEver.size > 0 && (
+          <span className="tag">
+            {queue.filter((p) => solvedEver.has(puzzleRef(p))).length}/{queue.length} solved before
+          </span>
+        )}
         {source === 'curated' && chessComRating && (
           <span className="tag">Calibrated to your rating ({chessComRating})</span>
         )}
@@ -334,10 +419,36 @@ export default function Puzzles() {
             <p style={{ textAlign: 'center', marginTop: 8, fontSize: '0.9rem' }}>
               Click or drag a piece to move · right-click drag to draw arrows
             </p>
+
+            {mistakeContext && (
+              <div className="card" style={{ marginTop: 16 }}>
+                <h3 style={{ fontSize: '1rem' }}>What you actually played</h3>
+                <p className="text-small" style={{ marginBottom: 10 }}>
+                  In your real game{mistakeContext.opponent ? ` against ${mistakeContext.opponent}` : ''}, you played{' '}
+                  <strong className="classification-blunder">{mistakeContext.moveSan}</strong> here instead. See if you can find
+                  the better move on the left.
+                </p>
+                <div style={{ maxWidth: 260, margin: '0 auto' }}>
+                  <Chessboard
+                    options={{
+                      position: mistakeContext.fenAfter,
+                      boardOrientation,
+                      allowDragging: false,
+                      id: 'mistake-context-board',
+                    }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
           <div className="card">
             <h3>{puzzle.theme?.replace(/-/g, ' ') || 'Tactic'}</h3>
             <p>Find the best move for {boardOrientation === 'white' ? 'White' : 'Black'}.</p>
+            {alreadySolved && status === 'playing' && (
+              <p className="text-small classification-best" style={{ marginTop: -8 }}>
+                You've solved this one before — see if you can find it again.
+              </p>
+            )}
 
             <div role="status" aria-live="polite">
               {status === 'wrong' && <p className="classification-blunder">Not quite — try again.</p>}
