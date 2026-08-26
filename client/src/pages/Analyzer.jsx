@@ -133,14 +133,40 @@ function explainMove(ply) {
   return { why, better, tip };
 }
 
-/** A short, human reason a candidate move is good, based on what it actually does. */
-function describeWhyGood(san) {
-  const clean = san.replace('+', '').replace('#', '');
-  if (san.includes('#')) return 'forces checkmate';
-  if (san.includes('x')) return 'wins material';
-  if (san.includes('+')) return 'gives a strong check';
-  if (/^O-O/.test(clean)) return 'gets the king to safety';
-  return 'keeps the position solid and active';
+const PIECE_NAMES = { p: 'pawn', n: 'knight', b: 'bishop', r: 'rook', q: 'queen', k: 'king' };
+
+// A handful of honest, low-content fallback phrasings for moves that don't do
+// anything dramatic — picked deterministically per move (not randomly) so the
+// same move always reads the same way, but different quiet moves don't all
+// repeat the exact same sentence.
+const QUIET_MOVE_FALLBACKS = [
+  'keeps the position flexible without committing too early',
+  'quietly improves piece coordination',
+  'maintains a solid, active setup',
+  "doesn't create a weakness while keeping options open",
+];
+
+/** A specific, move-aware reason a candidate move is good — based on what it actually does on the board. */
+function describeWhyGood(fenBefore, san) {
+  try {
+    const chess = new Chess(fenBefore);
+    const move = chess.move(san);
+    if (!move) return 'is a reasonable practical choice here';
+    if (chess.isCheckmate()) return 'delivers checkmate';
+    if (move.captured) return `wins the ${PIECE_NAMES[move.captured] || 'piece'}`;
+    if (chess.isCheck()) return 'gives a strong check, keeping the initiative';
+    if (move.flags.includes('k') || move.flags.includes('q')) return "gets the king to safety and connects the rooks";
+    if (move.flags.includes('p')) return 'promotes the pawn to a new queen';
+    if (move.piece === 'p' && ['d4', 'd5', 'e4', 'e5'].includes(move.to)) return 'stakes a claim in the center';
+    const backRank = move.color === 'w' ? '1' : '8';
+    if ((move.piece === 'n' || move.piece === 'b') && move.from[1] === backRank) return 'develops a piece toward the action';
+    if (move.piece === 'q' && move.from[1] === backRank) return 'brings the queen into play';
+    if (move.piece === 'r') return "improves the rook's reach";
+    const idx = (san.charCodeAt(0) + san.length + (move.to?.charCodeAt(0) || 0)) % QUIET_MOVE_FALLBACKS.length;
+    return QUIET_MOVE_FALLBACKS[idx];
+  } catch {
+    return 'is a reasonable practical choice here';
+  }
 }
 
 function formatMoverEval(evalCp, moverColor) {
@@ -149,21 +175,33 @@ function formatMoverEval(evalCp, moverColor) {
   return cp >= 0 ? `+${pawns}` : pawns;
 }
 
-function OtherGoodMoves({ ply }) {
+function OtherGoodMoves({ ply, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen);
   const played = ply.san;
   const options = (ply.alternatives || []).filter((a) => a.san && a.san !== played).slice(0, 3);
   if (options.length === 0) return null;
+  if (!open) {
+    return (
+      <button
+        className="btn secondary"
+        style={{ padding: '4px 12px', fontSize: '0.82rem', marginTop: 4 }}
+        onClick={() => setOpen(true)}
+      >
+        Show {options.length} other good option{options.length === 1 ? '' : 's'}
+      </button>
+    );
+  }
   return (
     <div style={{ marginTop: 4 }}>
       <p className="text-small" style={{ margin: '0 0 4px', fontWeight: 700, color: 'var(--text)' }}>
-        A few strong options here:
+        A few other strong options here:
       </p>
       <ul className="list-plain" style={{ gap: 2 }}>
         {options.map((alt, i) => (
           <li key={alt.san} style={{ padding: '2px 0', fontFamily: 'var(--font-mono)', fontSize: '0.88rem' }}>
             <strong className={i === 0 ? 'classification-best' : ''}>{alt.san}</strong>{' '}
             <span style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-sans)' }}>
-              ({formatMoverEval(alt.evalCp, ply.color)}) — {describeWhyGood(alt.san)}
+              ({formatMoverEval(alt.evalCp, ply.color)}) — {describeWhyGood(ply.fenBefore, alt.san)}
             </span>
           </li>
         ))}
@@ -174,6 +212,7 @@ function OtherGoodMoves({ ply }) {
 
 function ExplanationBlock({ ply, compact }) {
   const explanation = explainMove(ply);
+  const [showMore, setShowMore] = useState(false);
   if (!explanation) return null;
   const size = compact ? '0.92rem' : '0.98rem';
   return (
@@ -183,14 +222,26 @@ function ExplanationBlock({ ply, compact }) {
         <p style={{ margin: '0 0 8px' }}>&ldquo;{explanation.why}&rdquo;</p>
         {explanation.better && (
           <p style={{ margin: '0 0 8px' }}>
-            &ldquo;<strong>Better:</strong> {explanation.better}&rdquo;
+            &ldquo;<strong>Better:</strong> {explanation.better} — {describeWhyGood(ply.fenBefore, explanation.better)}&rdquo;
           </p>
         )}
-        <p style={{ margin: 0, color: 'var(--text-dim)' }}>
-          &ldquo;<strong style={{ color: 'var(--text)' }}>How to avoid this:</strong> {explanation.tip}&rdquo;
-        </p>
         <div style={{ fontStyle: 'normal' }}>
-          <OtherGoodMoves ply={ply} />
+          {showMore ? (
+            <>
+              <p style={{ margin: '0 0 4px', color: 'var(--text-dim)' }}>
+                &ldquo;<strong style={{ color: 'var(--text)' }}>How to avoid this:</strong> {explanation.tip}&rdquo;
+              </p>
+              <OtherGoodMoves ply={ply} defaultOpen />
+            </>
+          ) : (
+            <button
+              className="btn secondary"
+              style={{ padding: '4px 12px', fontSize: '0.82rem' }}
+              onClick={() => setShowMore(true)}
+            >
+              Show more detail
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -665,11 +716,9 @@ export default function Analyzer() {
                 {currentPly.classification === 'best' || currentPly.classification === 'good' ? (
                   <div>
                     <p style={{ fontSize: '0.95rem' }} className="classification-best">
-                      {currentPly.color === playerMoveColor
-                        ? currentPly.classification === 'best'
-                          ? 'This was the engine\'s top choice.'
-                          : 'A strong move — close to the engine\'s top choice.'
-                        : `${opponentName} found a strong move here.`}
+                      {currentPly.color === playerMoveColor ? 'You' : opponentName} played the {currentPly.classification === 'best' ? "engine's top choice" : "engine's near-top choice"}
+                      {' — '}
+                      {describeWhyGood(currentPly.fenBefore, currentPly.san)}.
                     </p>
                     <OtherGoodMoves ply={currentPly} />
                   </div>
