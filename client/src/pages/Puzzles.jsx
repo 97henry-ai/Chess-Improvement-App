@@ -253,8 +253,8 @@ export default function Puzzles() {
                   minHeight: 28,
                   textAlign: 'center',
                   fontWeight: 700,
-                  color: solved ? 'var(--accent)' : i === index ? 'var(--text)' : 'var(--text-dim)',
-                  borderColor: solved ? 'var(--accent)' : i === index ? 'var(--text)' : 'var(--border)',
+                  color: solved ? 'var(--win)' : i === index ? 'var(--text)' : 'var(--text-dim)',
+                  borderColor: solved ? 'var(--win)' : i === index ? 'var(--text)' : 'var(--border)',
                 }}
               >
                 {solved ? '✓' : i + 1}

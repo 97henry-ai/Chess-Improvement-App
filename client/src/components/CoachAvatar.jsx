@@ -10,11 +10,11 @@ export default function CoachAvatar({ size = 56 }) {
       viewBox="0 0 64 64"
       role="img"
       aria-label="Coach"
-      style={{ flexShrink: 0, borderRadius: '50%', background: '#2c3444' }}
+      style={{ flexShrink: 0, borderRadius: '50%', background: '#fed7aa' }}
     >
-      <circle cx="32" cy="32" r="32" fill="#2b3346" />
+      <circle cx="32" cy="32" r="32" fill="#fed7aa" />
       {/* neck/shoulders */}
-      <path d="M14 60c2-9 8-14 18-14s16 5 18 14z" fill="#3d4a63" />
+      <path d="M14 60c2-9 8-14 18-14s16 5 18 14z" fill="#fb923c" />
       {/* head */}
       <ellipse cx="32" cy="28" rx="14" ry="15" fill="#e8b98a" />
       {/* ears */}
@@ -31,9 +31,9 @@ export default function CoachAvatar({ size = 56 }) {
       {/* smile */}
       <path d="M26 35c2 2.5 10 2.5 12 0" fill="none" stroke="#7a4a33" strokeWidth="1.8" strokeLinecap="round" />
       {/* beanie with a crown/king emblem */}
-      <path d="M17 19c0-9 7-15 15-15s15 6 15 15c-4-2.5-9.5-4-15-4s-11 1.5-15 4z" fill="#5f6cae" />
-      <rect x="15.5" y="17.5" width="33" height="4" rx="2" fill="#4a5694" />
-      <path d="M29 8l3 4 3-4-1 6h-4z" fill="#f0c675" />
+      <path d="M17 19c0-9 7-15 15-15s15 6 15 15c-4-2.5-9.5-4-15-4s-11 1.5-15 4z" fill="#2563eb" />
+      <rect x="15.5" y="17.5" width="33" height="4" rx="2" fill="#1d4ed8" />
+      <path d="M29 8l3 4 3-4-1 6h-4z" fill="#fbbf24" />
     </svg>
   );
 }
