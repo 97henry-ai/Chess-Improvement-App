@@ -413,7 +413,7 @@ export default function Puzzles() {
       )}
 
       {puzzle && chess && (
-        <div className="grid" style={{ gridTemplateColumns: 'minmax(0,460px) 1fr', gap: 24 }}>
+        <div className="board-layout-2col">
           <div>
             <Chessboard
               options={{

@@ -643,7 +643,7 @@ export default function Analyzer() {
             </div>
           )}
 
-          <div className="grid" style={{ gridTemplateColumns: '52px minmax(0,460px) 1fr', gap: 20, alignItems: 'start' }}>
+          <div className="board-layout">
           <div>
             <div className="eval-bar-wrap" style={{ height: 460 }}>
               <div className="eval-bar-fill" style={{ height: `${evalBarHeight(displayEvalCp !== undefined ? { cp: displayEvalCp } : null)}%` }} />

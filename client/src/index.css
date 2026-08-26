@@ -183,6 +183,7 @@ button {
   display: flex;
   gap: 4px;
   flex: 1;
+  flex-wrap: wrap;
 }
 .topbar nav a {
   padding: 9px 18px;
@@ -259,8 +260,28 @@ a.card:hover {
 .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
+.board-layout {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 460px) 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.board-layout-2col {
+  display: grid;
+  grid-template-columns: minmax(0, 460px) 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.board-layout-2col-narrow {
+  display: grid;
+  grid-template-columns: minmax(0, 360px) 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
 @media (max-width: 900px) {
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .board-layout, .board-layout-2col, .board-layout-2col-narrow { grid-template-columns: 1fr; }
   .topbar { flex-wrap: wrap; }
   .content { padding: 22px 18px 56px; }
 }

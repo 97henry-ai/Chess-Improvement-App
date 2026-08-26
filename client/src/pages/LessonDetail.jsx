@@ -29,7 +29,7 @@ export default function LessonDetail() {
         ))}
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,360px) 1fr', gap: 20, marginTop: 18, alignItems: 'start' }}>
+      <div className="board-layout-2col-narrow" style={{ marginTop: 18 }}>
         {lesson.startFen && (
           <div>
             <LessonBoard fen={lesson.startFen} />
